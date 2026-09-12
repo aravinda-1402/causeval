@@ -1,0 +1,17 @@
+pnpm-lock.yaml
+node_modules
+**/dist
+**/.next
+**/.next-dev
+**/out
+output
+test-results
+playwright-report
+.causeval-demo
+# Generated report artifacts: byte-for-byte output of `pnpm demo:generate`.
+apps/web/public/demo.json
+apps/web/public/report.html
+apps/web/lib/demo-data.json
+examples/support-agent/.causeval
+examples/support-agent/evals/support.json
+examples/support-agent/prompts/system.md

@@ -1,0 +1,21 @@
+node_modules/
+dist/
+.next/
+.next-dev/
+out/
+.turbo/
+.env
+.env.local
+*.tsbuildinfo
+output/
+test-results/
+playwright-report/
+# Analysis caches can contain prompt and eval content; never commit them.
+.causeval/cache/
+**/.causeval/cache/
+# Scratch output of `causeval demo`.
+.causeval-demo/
+
+# Internal build specification, addressed to an AI agent. Kept locally for
+# reference; not part of the public repository.
+CausEval_Astra_Build_Spec.md

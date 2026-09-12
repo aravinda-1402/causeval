@@ -1,0 +1,43 @@
+{
+  "name": "@causeval/core",
+  "version": "0.1.0",
+  "description": "Engine behind CausEval: rule extraction, eval traceability, prompt mutation and causal coverage.",
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/aravinda-1402/causeval#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aravinda-1402/causeval.git",
+    "directory": "packages/core"
+  },
+  "bugs": {
+    "url": "https://github.com/aravinda-1402/causeval/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE"
+  ],
+  "scripts": {
+    "build": "tsup src/index.ts --format esm --dts --clean",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "^3.25.76",
+    "yaml": "^2.8.1"
+  },
+  "devDependencies": {
+    "tsup": "^8.5.0"
+  }
+}

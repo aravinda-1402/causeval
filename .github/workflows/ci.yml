@@ -1,0 +1,57 @@
+name: CI
+on:
+  push:
+  pull_request:
+# Read-only by default. The coverage job below never writes to the repository;
+# add pull-requests: write only if you enable the action's comment input.
+permissions:
+  contents: read
+jobs:
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
+      - run: pnpm format:check
+      - run: pnpm typecheck
+      # The GitHub Action tests execute the built CLI, so build first.
+      - run: pnpm build
+      - run: pnpm test
+      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm test:web
+      - name: Committed demo artifacts match the engine output
+        run: |
+          pnpm demo:generate
+          git diff --exit-code -- examples apps/web/public apps/web/lib
+  action:
+    runs-on: ubuntu-latest
+    needs: quality
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter causeval... build
+      # Default CI usage: scan only. verify executes evals and costs model calls.
+      - uses: ./packages/action
+        id: coverage
+        with:
+          config: examples/support-agent/causeval.config.ts
+          mode: scan
+          fail-on: threshold
+          comment: "false"
+          cli-path: packages/cli/dist/index.js
+      - name: Action exposed its outputs
+        run: |
+          test "${{ steps.coverage.outputs.trace-coverage }}" = "0.75"
+          test "${{ steps.coverage.outputs.causal-coverage }}" = "not-verified"
+          test "${{ steps.coverage.outputs.verified }}" = "false"

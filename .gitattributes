@@ -1,0 +1,12 @@
+# Normalise to LF in the repository so Windows contributors do not produce
+# whole-file diffs and `prettier --check` agrees across platforms.
+* text=auto eol=lf
+*.png binary
+*.svg text eol=lf
+*.ico binary
+pnpm-lock.yaml text eol=lf linguist-generated=true
+# Generated report artifacts: regenerate with `pnpm demo:generate`.
+apps/web/lib/demo-data.json linguist-generated=true
+apps/web/public/demo.json linguist-generated=true
+apps/web/public/report.html linguist-generated=true
+examples/support-agent/.causeval/** linguist-generated=true

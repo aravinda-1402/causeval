@@ -1,0 +1,82 @@
+name: CausEval behavioral coverage
+description: Measure Trace Coverage and Causal Rule Coverage of a system prompt against an eval suite, and publish the evidence.
+branding:
+  icon: git-branch
+  color: green
+inputs:
+  config:
+    description: Path to causeval.config.ts inside the checked-out workspace
+    default: causeval.config.ts
+  mode:
+    description: scan (cheap, no eval execution) or verify (runs baseline and mutant evals)
+    default: scan
+  comment:
+    description: Set to true to create or update one pull request comment. Requires pull-requests write permission.
+    default: "false"
+  fail-on:
+    description: threshold or never
+    default: threshold
+  version:
+    description: npm version of the causeval package to run when it is not already installed
+    default: latest
+  cli-path:
+    description: Path to a prebuilt CLI entry point, used instead of npm
+    default: ""
+  token:
+    description: GitHub token used only when comment is true
+    default: ${{ github.token }}
+outputs:
+  trace-coverage:
+    description: Trace coverage as a fraction between 0 and 1
+    value: ${{ steps.run.outputs.trace-coverage }}
+  causal-coverage:
+    description: Causal Rule Coverage as a fraction, or not-verified when mode is scan
+    value: ${{ steps.run.outputs.causal-coverage }}
+  verified:
+    description: true when causal verification actually ran
+    value: ${{ steps.run.outputs.verified }}
+  eval-suite-detected:
+    description: false when no eval files matched, which makes Trace Coverage 0 by definition
+    value: ${{ steps.run.outputs.eval-suite-detected }}
+  uncovered-count:
+    description: Number of rules with no credible eval mapping
+    value: ${{ steps.run.outputs.uncovered-count }}
+  pseudo-covered-count:
+    description: Number of rules whose mapped evals did not detect removal
+    value: ${{ steps.run.outputs.pseudo-covered-count }}
+  high-risk-uncovered-count:
+    description: Number of high or critical rules without protection
+    value: ${{ steps.run.outputs.high-risk-uncovered-count }}
+  gate-failed:
+    description: true when a configured threshold was not met
+    value: ${{ steps.run.outputs.gate-failed }}
+  report-path:
+    description: Absolute path of the JSON report
+    value: ${{ steps.run.outputs.report-path }}
+runs:
+  using: composite
+  steps:
+    - id: run
+      shell: bash
+      env:
+        CAUSEVAL_ACTION_PATH: ${{ github.action_path }}
+        CAUSEVAL_ACTION_CONFIG: ${{ inputs.config }}
+        CAUSEVAL_ACTION_MODE: ${{ inputs.mode }}
+        CAUSEVAL_ACTION_FAIL_ON: ${{ inputs.fail-on }}
+        CAUSEVAL_ACTION_COMMENT: ${{ inputs.comment }}
+        CAUSEVAL_ACTION_VERSION: ${{ inputs.version }}
+        CAUSEVAL_ACTION_CLI: ${{ inputs.cli-path }}
+        CAUSEVAL_ACTION_TOKEN: ${{ inputs.token }}
+      run: node "$CAUSEVAL_ACTION_PATH/run.mjs"
+    - name: Upload CausEval report
+      if: always() && steps.run.outputs.report-path != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: causeval-report-${{ github.job }}
+        include-hidden-files: true
+        if-no-files-found: ignore
+        path: |
+          ${{ steps.run.outputs.report-path }}
+          ${{ steps.run.outputs.report-html-path }}
+          ${{ steps.run.outputs.badge-path }}
+          ${{ steps.run.outputs.summary-path }}

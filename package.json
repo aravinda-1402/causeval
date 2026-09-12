@@ -1,0 +1,37 @@
+{
+  "name": "causeval-workspace",
+  "private": true,
+  "packageManager": "pnpm@10.17.1",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "scripts": {
+    "dev": "node scripts/task.mjs dev",
+    "build": "node scripts/task.mjs build",
+    "typecheck": "node scripts/task.mjs typecheck",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:web": "playwright test",
+    "format": "prettier --write .",
+    "format:check": "prettier --check .",
+    "demo:generate": "tsx scripts/generate-demo.ts",
+    "causeval": "tsx packages/cli/src/index.ts",
+    "clean:install": "node scripts/clean-install.mjs",
+    "release:check": "node scripts/release-check.mjs"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.35.0",
+    "@playwright/test": "^1.55.0",
+    "@types/node": "^22.18.0",
+    "eslint": "^9.35.0",
+    "prettier": "^3.6.2",
+    "tsx": "^4.20.5",
+    "turbo": "^2.5.6",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.42.0",
+    "vitest": "^3.2.4",
+    "yaml": "^2.8.1",
+    "zod": "3.25.76"
+  },
+  "type": "module"
+}

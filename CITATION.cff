@@ -1,0 +1,24 @@
+cff-version: 1.2.0
+message: "If you use CausEval in research, please cite it."
+title: "CausEval: Causal Rule Coverage for AI Behavioral Contracts"
+type: software
+version: 0.1.0
+license: Apache-2.0
+repository-code: "https://github.com/aravinda-1402/causeval"
+authors:
+  - family-names: "Jatavallabha"
+    given-names: "Aravinda Raman"
+    alias: "aravinda-1402"
+abstract: >-
+  A tool that extracts behavioral rules from an AI system prompt, maps them to an
+  existing evaluation suite, removes one rule at a time, and measures whether the
+  mapped evaluations detect the removal. It reports Trace Coverage and Causal Rule
+  Coverage as evidence about behavioral regression protection under one tested
+  model and configuration, together with the confounds that evidence cannot rule
+  out. It makes no claim of correctness, safety or compliance.
+keywords:
+  - large language models
+  - evaluation
+  - mutation testing
+  - prompt engineering
+  - software testing

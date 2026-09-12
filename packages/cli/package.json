@@ -1,0 +1,64 @@
+{
+  "name": "causeval",
+  "version": "0.1.0",
+  "description": "Behavioral contract coverage for AI prompts: find the rules your eval suite does not actually protect.",
+  "keywords": [
+    "llm",
+    "evals",
+    "evaluation",
+    "prompt",
+    "prompt-engineering",
+    "coverage",
+    "mutation-testing",
+    "ai-testing",
+    "behavioral-testing",
+    "cli"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://github.com/aravinda-1402/causeval#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/aravinda-1402/causeval.git",
+    "directory": "packages/cli"
+  },
+  "bugs": {
+    "url": "https://github.com/aravinda-1402/causeval/issues"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=20.11"
+  },
+  "bin": {
+    "causeval": "dist/index.js"
+  },
+  "main": "dist/index.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    },
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "NOTICE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsup --config tsup.config.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "commander": "^14.0.0",
+    "fast-glob": "^3.3.3",
+    "jiti": "^2.5.1",
+    "yaml": "^2.8.1",
+    "zod": "^3.25.76"
+  },
+  "devDependencies": {
+    "@causeval/core": "workspace:*",
+    "tsup": "^8.5.0"
+  }
+}
