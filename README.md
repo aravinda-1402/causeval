@@ -2,15 +2,38 @@
 
 **Code has coverage. Your prompts should too.**
 
-CausEval finds the behavioral rules your AI eval suite doesn't actually protect.
+CausEval investigates which behavioral rules your AI eval suite protects under
+the tested model and configuration.
 It extracts the behavioral contract from your system prompt, maps it to your
 existing evals, then removes one rule at a time and re-runs the evals that were
-supposed to cover it. If the tests still pass without the rule, they were never
-protecting it.
+supposed to cover it. If the tests still pass without the rule, the experiment
+found no evidence that those tests depend on that instruction.
 
-```bash
-npx causeval demo     # the whole idea in 30 seconds, no API key
-```
+![CausEval dashboard showing 75% Trace Coverage, 42% Causal Rule Coverage, and an inspectable table of behavioral rules](docs/images/coverage-overview.png)
+
+_The bundled support-agent fixture: 12 rules, 9 evals, and a passing baseline
+with a measurable coverage gap. These are reproducible fixture results, not a
+benchmark of a live model._
+
+[Get started](#run-it-locally) · [Explore the app](#a-guided-tour-of-the-app) ·
+[Use your own prompt](#use-your-own-prompt-and-evals) ·
+[CLI reference](#cli) · [Documentation](#documentation)
+
+## What you can do
+
+- **Inspect your prompt's contract:** see atomic behavioral rules with exact
+  source quotes, severity, and the evals mapped to them.
+- **Test whether instructions matter to your evals:** compare repeated baseline
+  runs with runs where one instruction has been removed.
+- **Investigate a finding:** open the mutation diff, individual outcomes,
+  mapping rationale, and limitations behind each classification.
+- **Improve the suite:** draft missing cases, review them, and rerun coverage.
+- **Share the evidence:** generate a standalone HTML report, JSON, and badges,
+  or run coverage checks in GitHub Actions.
+
+The **CLI** runs the analysis on your files. The **web app** explores the bundled
+example without credentials. The **standalone HTML report** presents your own
+CLI results and opens locally in a browser.
 
 ## The problem
 
@@ -22,9 +45,8 @@ npx causeval demo     # the whole idea in 30 seconds, no API key
   4 behaviors look tested. Removing their instruction changed nothing.
 ```
 
-A suite can be green while whole sections of your prompt are behaviorally
-untested. The gap between those second and third numbers is what CausEval
-measures.
+A suite can be green while removal of mapped instructions goes undetected.
+The gap between those second and third numbers is what CausEval measures.
 
 ```text
 RULE      R06  Never send an email without explicit user confirmation.
@@ -45,7 +67,45 @@ dependence — which can mean a weak eval, _or_ a model that keeps the behavior
 without being told. CausEval says which of those it cannot distinguish instead
 of pretending it can. See [methodology](docs/methodology.md).
 
-## 60-second quickstart
+## Run it locally
+
+**Version 0.1 is currently unpublished on npm.** Use a source checkout to try it
+today. You need Git, Node.js 22+, and pnpm 10. If pnpm is unavailable, replace
+`pnpm` below with `npx --yes pnpm@10.17.1`.
+
+```bash
+git clone https://github.com/aravinda-1402/causeval.git
+cd causeval
+pnpm install --frozen-lockfile
+pnpm build
+pnpm causeval demo
+```
+
+The demo runs without an API key. It creates an editable example at
+`.causeval-demo/` and writes `.causeval-demo/.causeval/report.html`. Open that
+file in your browser, or run:
+
+```bash
+pnpm causeval report --config .causeval-demo/causeval.config.ts --open
+```
+
+To explore the web app, start it in a terminal:
+
+```bash
+pnpm dev
+```
+
+| Local page                    | What you will find                                            |
+| ----------------------------- | ------------------------------------------------------------- |
+| <http://127.0.0.1:3000>       | Product overview and an explanation of the coverage gap.      |
+| <http://127.0.0.1:3000/demo/> | Interactive fixture dashboard, filters, and evidence drawers. |
+| <http://127.0.0.1:3000/docs/> | In-app documentation.                                         |
+
+The web demo is a static example viewer. To analyze your own files, use the CLI
+workflow below and open the report it generates.
+
+<details>
+<summary>npm quickstart after the package is published</summary>
 
 ```bash
 npm install -D causeval
@@ -54,8 +114,73 @@ npx causeval scan        # behavioral contract + Trace Coverage. No evals execut
 npx causeval verify      # removes each rule, re-runs its evals, reports CRC.
 ```
 
-`init` points at a bundled deterministic fixture, so both commands work with no
-API key. Point `provider` at your own model when you are ready:
+Until publication, use `pnpm causeval` from the checkout in place of
+`npx causeval`.
+
+</details>
+
+## A guided tour of the app
+
+### 1. Start with the coverage overview
+
+Open `/demo/` and compare the summary cards. **Trace Coverage** asks whether a
+rule has a credible eval mapping; **Causal Rule Coverage** asks whether removing
+it produced a sufficient drop in eval pass rate, with a stable baseline.
+Click a metric's explanation button to see how the number is calculated.
+
+Use the rule search or **Filters** to narrow the table by severity and other
+available criteria. Begin with critical or high-severity rules, then investigate
+uncovered and pseudo-covered findings.
+
+### 2. Open a rule and follow the evidence
+
+Search for `email` and click the rule about explicit user confirmation. The
+drawer shows the source instruction, its mapped eval, the exact removal, and
+the baseline and mutant outcomes.
+
+![Rule evidence drawer showing the email-confirmation instruction removed while its eval still passes, with experiment limitations alongside](docs/images/rule-evidence.png)
+
+In this fixture, all three baseline runs and all three mutant runs pass. That
+is **pseudo-coverage**: under this configuration, the eval did not detect the
+removal. Check **What this cannot rule out** before interpreting the result;
+model priors or another instruction may preserve the behavior.
+
+Open **Suggested evals** to inspect candidate cases for missing dimensions.
+They are proposals for human review, and are marked **GENERATED — UNREVIEWED**.
+
+### 3. Read and share the standalone report
+
+The CLI's HTML report includes a searchable rule table and clickable findings.
+Open a rule to inspect its source, mappings, mutation, outcomes, and
+classification rationale. Expand **Run metadata and reproduction** to inspect
+the configuration recorded for the run.
+
+![Standalone CausEval HTML report with coverage metrics and per-rule classifications](docs/images/standalone-report.png)
+
+The default output files are relative to your configuration file's directory:
+
+| Artifact                            | Use it for                                                 |
+| ----------------------------------- | ---------------------------------------------------------- |
+| `.causeval/report.html`             | Open the interactive report locally or share the file.     |
+| `.causeval/report.json`             | Inspect structured evidence or build your own integration. |
+| `causeval badge --out coverage.svg` | Generate an SVG badge from the saved report.               |
+
+Reports contain prompt and eval evidence. Review their contents before sharing.
+
+## Use your own prompt and evals
+
+From the repository root, create a separate project directory:
+
+```bash
+pnpm causeval init --dir ./my-agent
+```
+
+This creates `my-agent/causeval.config.ts`, `my-agent/prompts/system.md`, and
+`my-agent/evals/example.yaml`. The initial configuration uses the bundled
+fixture, which only understands the example prompt. **Switch provider when you
+replace that prompt with your own.**
+
+For example, edit `my-agent/causeval.config.ts`:
 
 ```ts
 export default {
@@ -64,6 +189,66 @@ export default {
   provider: { type: "openai", model: process.env.CAUSEVAL_MODEL },
 };
 ```
+
+Set the credentials and model in the shell where you will run the CLI. Choose a
+model available to your account; CausEval does not select one for you.
+
+```bash
+# Bash / zsh
+export OPENAI_API_KEY="your-api-key"
+export CAUSEVAL_MODEL="your-model-id"
+```
+
+```powershell
+# PowerShell
+$env:OPENAI_API_KEY = "your-api-key"
+$env:CAUSEVAL_MODEL = "your-model-id"
+```
+
+For Anthropic, use `type: "anthropic"` and `ANTHROPIC_API_KEY`. Local Ollama
+and compatible endpoints are also supported; see [Providers](docs/providers.md).
+
+Replace the example evals with cases for your prompt. Each case needs a unique
+ID, an input (or message history), and the behavior you expect:
+
+```yaml
+version: 1
+evals:
+  - id: email-confirmation
+    input: Email my manager that I will be late.
+    expected:
+      behavior: Ask for explicit user confirmation before sending.
+      mustNotContain: ["Email sent"]
+```
+
+Here the deterministic assertion rejects one explicit failure, and the semantic
+judge evaluates the expected behavior. Add cases that create a real opportunity
+to violate the rule, including boundaries and attempts to bypass it. Native mode
+evaluates text responses; use a [custom runner](docs/custom-runner.md) for your
+own application execution and assertions.
+
+```bash
+# Extract rules and inspect mappings first; this does not execute your evals.
+pnpm causeval scan --config ./my-agent/causeval.config.ts --verbose
+
+# Then run repeated baseline and mutation experiments.
+pnpm causeval verify --config ./my-agent/causeval.config.ts --runs 3 --verbose
+
+# Open the results for this project.
+pnpm causeval report --config ./my-agent/causeval.config.ts --open
+```
+
+`scan` makes provider calls for analysis. `verify` also makes repeated candidate
+and judge calls, so begin with a small suite and monitor the provider request
+count in verbose output. A scan leaves CRC unmeasured; it does not report 0% CRC.
+
+| Finding          | Next step                                                                                                               |
+| ---------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Causally covered | Inspect the diff and failing outcomes to confirm the intended behavior explains the change.                             |
+| Pseudo-covered   | Check whether the input permits a violation and the assertions detect it; inspect redundancy and model-prior confounds. |
+| Uncovered        | Inspect extraction and mapping, then add a targeted eval or a justified manual override.                                |
+| Flaky            | Stabilize the baseline before drawing conclusions about a mutation.                                                     |
+| Indeterminate    | Read the recorded reason and resolve execution, mutation, or evidence limitations before rerunning.                     |
 
 ## No eval suite yet? Start there.
 
@@ -87,11 +272,26 @@ $ npx causeval scan
     causeval generate
 ```
 
+For the `my-agent` project above, remove the example eval file if you have no
+suite yet, then run:
+
 ```bash
-npx causeval generate            # drafts cases for the dimensions each rule is missing
-npx causeval review --list       # see every candidate and why it exists
-npx causeval review --accept all # or --accept <id>, or edit the YAML first
+pnpm causeval scan --config ./my-agent/causeval.config.ts
+pnpm causeval generate --config ./my-agent/causeval.config.ts
+pnpm causeval review --config ./my-agent/causeval.config.ts --list
 ```
+
+Inspect `.causeval/generated-evals.yaml` inside `my-agent/`. Edit weak cases and
+check their expected behavior before accepting them. Replace `CANDIDATE_ID`
+below with an ID from the review output:
+
+```bash
+pnpm causeval review --config ./my-agent/causeval.config.ts --accept CANDIDATE_ID
+pnpm causeval verify --config ./my-agent/causeval.config.ts
+```
+
+Use `--accept all` only after reviewing every candidate. Accepted cases are
+written to `evals/causeval-generated.yaml` in the project directory.
 
 For `Refunds above $100 require manager approval.` that means `$50`, `$100`,
 `$101`, `$250`, and an attempt to bypass approval — targeted at the missing
@@ -138,10 +338,14 @@ For any rule, the report answers all six questions without a mysterious score:
    it was judged against, and any confound the experiment could not rule out.
 
 ```bash
-npx causeval report --open
+pnpm causeval report --config ./my-agent/causeval.config.ts --open
 ```
 
 ## GitHub Action
+
+The `v0` tag is available. The example below assumes the npm package has been
+published; until then, build the CLI from source and set `cli-path` as described in
+[the Action guide](docs/github-action.md).
 
 ```yaml
 permissions:
@@ -248,8 +452,8 @@ The test suite never calls a paid API. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Status
 
-Version 0.1. The npm package has not been published from this build; after
-release the install above is the intended path. Provider wire protocols are
+Version 0.1. Use the source checkout instructions above until the npm release.
+Provider wire protocols are
 covered by mocked tests, but **live model quality has not been measured** — run
 a budgeted smoke test against your own endpoint before relying on extraction or
 judging quality. See [docs/release.md](docs/release.md).
