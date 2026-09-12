@@ -2,6 +2,8 @@
 
 **Code has coverage. Your prompts should too.**
 
+Created by [Aravinda Raman Jatavallabha](https://github.com/aravinda-1402).
+
 CausEval investigates which behavioral rules your AI eval suite protects under
 the tested model and configuration.
 It extracts the behavioral contract from your system prompt, maps it to your
@@ -460,8 +462,32 @@ judging quality. See [docs/release.md](docs/release.md).
 
 ## Citation
 
-If you use CausEval in research, cite the project via
-[CITATION.cff](CITATION.cff). There is no associated paper or DOI.
+If you use CausEval in research, a tutorial, a demo, or a product, please credit
+**Aravinda Raman Jatavallabha** and link to this repository. Suggested credit:
+
+> This work uses CausEval, created by Aravinda Raman Jatavallabha:
+> https://github.com/aravinda-1402/causeval
+
+For research, use [CITATION.cff](CITATION.cff) or the copyable BibTeX in
+[Attribution and citation](ATTRIBUTION.md). There is no associated paper or DOI.
+
+Used CausEval in a project or study? You can
+[share a use case](https://github.com/aravinda-1402/causeval/issues/new?template=use-case.md)
+with the version, findings, and supporting links. Measured outcomes, limitations,
+and negative results are all useful. Participation is optional.
+
+## Attribution when redistributing
+
+When redistributing CausEval or derivative works, comply with Apache-2.0
+section 4: include the license, mark modified files, retain applicable notices
+in distributed source, and carry forward the applicable attribution from
+[NOTICE](NOTICE) in a permitted location. That notice names
+**Aravinda Raman Jatavallabha** as CausEval's creator and copyright holder.
+
+The public credit and research citation requested above are appreciated, but
+are not additional license conditions. Apache-2.0 does not require a public
+credit solely for private use or running a hosted service. See
+[ATTRIBUTION.md](ATTRIBUTION.md) for details and reusable credit text.
 
 ## License
 

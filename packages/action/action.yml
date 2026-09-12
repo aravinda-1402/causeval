@@ -1,4 +1,5 @@
 name: CausEval behavioral coverage
+author: Aravinda Raman Jatavallabha
 description: Measure Trace Coverage and Causal Rule Coverage of a system prompt against an eval suite, and publish the evidence.
 branding:
   icon: git-branch

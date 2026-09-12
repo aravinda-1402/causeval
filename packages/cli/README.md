@@ -113,4 +113,15 @@ Full methodology, formulas and threats to validity:
 
 ## License
 
-Apache-2.0.
+Created by **Aravinda Raman Jatavallabha**. Copyright 2026 Aravinda Raman
+Jatavallabha. Licensed under Apache-2.0; see the bundled `LICENSE` and `NOTICE`.
+
+Redistributions must meet Apache-2.0 section 4, including its requirements to
+retain applicable copyright and attribution notices. Please also credit the
+creator when using CausEval in research, products, tutorials, or demos:
+
+> This work uses CausEval, created by Aravinda Raman Jatavallabha:
+> https://github.com/aravinda-1402/causeval
+
+This public credit is a request, not an additional license condition.
+[Attribution and citation guide](https://github.com/aravinda-1402/causeval/blob/main/ATTRIBUTION.md).

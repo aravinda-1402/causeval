@@ -1,5 +1,9 @@
 {
   "name": "@causeval/web",
+  "author": {
+    "name": "Aravinda Raman Jatavallabha",
+    "url": "https://github.com/aravinda-1402"
+  },
   "private": true,
   "version": "0.1.0",
   "scripts": {

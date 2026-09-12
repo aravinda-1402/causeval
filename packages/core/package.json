@@ -1,5 +1,9 @@
 {
   "name": "@causeval/core",
+  "author": {
+    "name": "Aravinda Raman Jatavallabha",
+    "url": "https://github.com/aravinda-1402"
+  },
   "version": "0.1.0",
   "description": "Engine behind CausEval: rule extraction, eval traceability, prompt mutation and causal coverage.",
   "license": "Apache-2.0",

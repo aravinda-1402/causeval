@@ -1,5 +1,9 @@
 {
   "name": "causeval-workspace",
+  "author": {
+    "name": "Aravinda Raman Jatavallabha",
+    "url": "https://github.com/aravinda-1402"
+  },
   "private": true,
   "packageManager": "pnpm@10.17.1",
   "engines": {
