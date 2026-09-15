@@ -2,14 +2,10 @@
 
 ## First demo, no API key
 
-**npm publication is pending.** Use Git and Node.js 22+ to run from source:
+Needs Node.js 22+. Nothing else to install.
 
 ```bash
-git clone https://github.com/aravinda-1402/causeval.git
-cd causeval
-npx --yes pnpm@10.17.1 install --frozen-lockfile
-npx --yes pnpm@10.17.1 build
-npx --yes pnpm@10.17.1 causeval demo
+npx causeval demo
 ```
 
 Runs the bundled support-agent example end to end against a deterministic

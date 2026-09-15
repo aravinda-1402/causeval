@@ -6,8 +6,8 @@ comment.
 
 ## Minimal usage
 
-**npm publication is pending.** The existing `v0` tag is preserved. Until the
-npm package is published, build this repository in a subdirectory:
+The existing `v0` tag is preserved. Install the published CLI with
+`npm install -D causeval`, or build this repository in a subdirectory:
 
 ```yaml
 permissions:

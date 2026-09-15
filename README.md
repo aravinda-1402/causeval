@@ -76,27 +76,28 @@ of pretending it can. See [methodology](docs/methodology.md).
 
 ## Run it locally
 
-**npm publication is pending.** Use a source checkout to try it
-today. You need Git, Node.js 22+, and pnpm 10. If pnpm is unavailable, replace
-`pnpm` below with `npx --yes pnpm@10.17.1`.
-
 ```bash
-git clone https://github.com/aravinda-1402/causeval.git
-cd causeval
-pnpm install --frozen-lockfile
-pnpm build
-pnpm causeval demo
+npx causeval demo
 ```
 
-The demo runs without an API key. It creates an editable example at
-`.causeval-demo/` and writes `.causeval-demo/.causeval/report.html`. Open that
-file in your browser, or run:
+No API key and no config. It creates an editable example at `.causeval-demo/`
+and writes `.causeval-demo/.causeval/report.html`. Open that file in your
+browser, or run:
 
 ```bash
-pnpm causeval report --config .causeval-demo/causeval.config.ts --open
+npx causeval report --config .causeval-demo/causeval.config.ts --open
 ```
 
-To explore the web app, start it in a terminal:
+Then point it at your own project:
+
+```bash
+npm install -D causeval
+npx causeval init        # writes a config, prompt and eval suite that run immediately
+npx causeval scan        # behavioral contract + Trace Coverage. No evals executed.
+npx causeval verify      # removes each rule, re-runs its evals, reports CRC.
+```
+
+To explore the web app, start it from a source checkout:
 
 ```bash
 pnpm dev
@@ -112,17 +113,20 @@ The web demo is a static example viewer. To analyze your own files, use the CLI
 workflow below and open the report it generates.
 
 <details>
-<summary>npm quickstart after the package is published</summary>
+<summary>Run from a source checkout instead</summary>
+
+You need Git, Node.js 22+, and pnpm 10. If pnpm is unavailable, replace `pnpm`
+with `npx --yes pnpm@10.17.1`.
 
 ```bash
-npm install -D causeval
-npx causeval init        # writes a config, prompt and eval suite that run immediately
-npx causeval scan        # behavioral contract + Trace Coverage. No evals executed.
-npx causeval verify      # removes each rule, re-runs its evals, reports CRC.
+git clone https://github.com/aravinda-1402/causeval.git
+cd causeval
+pnpm install --frozen-lockfile
+pnpm build
+pnpm causeval demo
 ```
 
-Until publication, use `pnpm causeval` from the checkout in place of
-`npx causeval`.
+From a checkout, use `pnpm causeval` in place of `npx causeval`.
 
 </details>
 
@@ -359,9 +363,8 @@ pnpm causeval report --config ./my-agent/causeval.config.ts --open
 
 ## GitHub Action
 
-The `v0` tag is available. The example below assumes the npm package has been
-published; until then, build the CLI from source and set `cli-path` as described in
-[the Action guide](docs/github-action.md).
+The `v0` tag is available. See [the Action guide](docs/github-action.md) for
+options, including building the CLI from source and setting `cli-path`.
 
 ```yaml
 permissions:
@@ -472,7 +475,7 @@ The test suite never calls a paid API. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## Status
 
-Version 0.1. Use the source checkout instructions above until the npm release.
+Version 0.1.1, published on npm as [`causeval`](https://www.npmjs.com/package/causeval).
 Provider wire protocols are
 covered by mocked tests, but **live model quality has not been measured** — run
 a budgeted smoke test against your own endpoint before relying on extraction or

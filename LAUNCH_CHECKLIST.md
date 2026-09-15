@@ -28,18 +28,11 @@ is needed.
 
 ## Package
 
-- [ ] Publish the reviewed **0.1.1** CLI from the prepared source:
-
-  ```bash
-  npm publish ./packages/cli --access public
-  npm view causeval@0.1.1 version
-  ```
-
-  Then test `npx --yes causeval@0.1.1 demo` in an empty directory. npm currently
-  returns E404. The CLI bundles core; a separate core publication is optional.
-  Only after successful publication, remove pending-publication notices and
-  promote npm quick-start instructions. Source-checkout instructions already
-  work and can remain.
+- [x] Publish the reviewed **0.1.1** CLI. `causeval@0.1.1` is live on npm;
+      `npx --yes causeval@0.1.1 demo` was verified in an empty directory outside
+      the repository. The CLI bundles core; a separate core publication is
+      optional. Pending-publication notices have been removed and the npm
+      quick-start now leads, with source-checkout instructions kept below it.
 
 ## Website
 
