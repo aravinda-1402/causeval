@@ -93,10 +93,11 @@ These are the limits of what was validated, stated plainly.
   origin. Final commit `28e13af` passed hosted CI in [run 34918520357](https://github.com/aravinda-1402/causeval/actions/runs/34918520357).
   The owner reports an existing release; the unauthenticated releases API returned
   no visible releases during this pass. No release or tag was changed. npm still
-  returns E404 and requires authentication. The static site is live at
-  <https://causeval.arj142.chatgpt.site>; all five public routes and desktop/mobile
-  interaction checks passed. The working tree prepares version 0.1.1; see
+  returns E404 and requires authentication. The temporary hosted preview was made private after validation.
+
+  All five routes and desktop/mobile interaction checks passed. The working tree prepares version 0.1.1; see
   [release](release.md).
+
 - Testing is evidence, not a guarantee that every input or environment is
   error-free.
 

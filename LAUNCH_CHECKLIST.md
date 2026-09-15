@@ -48,8 +48,7 @@ is needed.
       `pnpm build` after setting that variable. Verify `/`, `/demo/`, `/docs/`,
       `/report.html` and `/social-preview.png` on the public domain.
 
-Deployed site: <https://causeval.arj142.chatgpt.site>. All five routes returned
-HTTP 200, and public desktop/mobile interaction tests passed.
+The temporary hosted preview passed all five routes and desktop/mobile tests, then was made private at the owner's request.
 
 ## Release / Zenodo
 

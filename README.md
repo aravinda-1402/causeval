@@ -21,7 +21,7 @@ benchmark of a live model._
 [Use your own prompt](#use-your-own-prompt-and-evals) ·
 [CLI reference](#cli) · [Documentation](#documentation)
 
-<https://causeval.arj142.chatgpt.site/demo/> · [30-second walkthrough](docs/images/causeval-launch.mp4)
+[30-second walkthrough](docs/images/causeval-launch.mp4)
 
 ## What you can do
 
