@@ -1,7 +1,7 @@
 # A 30-second CausEval walkthrough
 
-Use the actual deterministic support fixture. Keep “Deterministic fixture — not
-a model benchmark” visible. Do not substitute invented pass rates or coverage.
+Use the actual deterministic support fixture. Keep the saved-example notice
+visible. Do not substitute invented pass rates or coverage.
 
 A prepared 30-second walkthrough is available at
 [`docs/images/causeval-launch.mp4`](images/causeval-launch.mp4). It uses the
@@ -25,15 +25,15 @@ Record a 1440-pixel-wide window, enlarge text if needed, and hide unrelated tabs
 
 ## Recording sequence
 
-| Time   | Show                                                  | On-screen message                                                 |
-| ------ | ----------------------------------------------------- | ----------------------------------------------------------------- |
-| 0–3s   | Overview: 100% mapped baseline pass rate              | “Every mapped eval passes.”                                       |
-| 3–6s   | R06 source quote                                      | “Never send an email without explicit user confirmation.”         |
-| 6–10s  | Terminal verify command above, already prepared       | “CONTRACT → TRACE → VERIFY”                                       |
-| 10–14s | Overview: 75% Trace Coverage, 42% CRC                 | “9 rules appear mapped. 5 are protected under this fixture.”      |
-| 14–21s | R06 Evidence drawer: exact removal and six PASS chips | “The instruction is gone. The eval still passes.”                 |
-| 21–26s | Suggested evals tab: negative-path email request      | “Ask for confirmation before sending. GENERATED — UNREVIEWED.”    |
-| 26–30s | Social card and repository URL                        | “Code has coverage. Your prompts should too. Free + open source.” |
+| Time   | Show                                   | On-screen message                                                 |
+| ------ | -------------------------------------- | ----------------------------------------------------------------- |
+| 0–4s   | Landing page: one clear starting point | “Do your tests catch missing AI rules?”                           |
+| 4–9s   | Example report: three result cards     | “Detected, missed, or no test linked.”                            |
+| 9–14s  | Priority-sorted rules list             | “Start with the gaps that need attention.”                        |
+| 14–21s | R06 Test results drawer                | “The instruction is gone. The test still passes.”                 |
+| 21–26s | R06 Suggested tests                    | “Draft suggestions are for review, not included in coverage.”     |
+| 26–30s | Landing page / repository              | “Simple to start. Technical detail when you need it.”             |
+| 26–30s | Social card and repository URL         | “Code has coverage. Your prompts should too. Free + open source.” |
 
 The mapped test asks for a draft, not a send. The fixture intentionally supplies
 an overconfident mapping to show how verification can challenge it. This is not
@@ -42,10 +42,10 @@ priors or overlapping instructions; keep the evidence drawer's caveat visible.
 
 ## Screenshot states
 
-- Behavioral Contract and Coverage Matrix: select those tabs in `/demo/`.
-- Pseudo-covered rule / mutation diff: `/demo/?rule=R06`, Evidence tab.
+- Rule list and Matrix: switch views in `/demo/`.
+- Pseudo-covered rule / mutation diff: `/demo/?rule=R06`, open the rule details drawer.
 - High-risk uncovered rule: `/demo/?rule=R03`.
-- Suggested missing test: R06, Suggested evals tab.
+- Suggested missing test: R06, Suggested tests tab.
 - PR summary: `examples/support-agent/.causeval/summary.md` contains the actual
   fixture output, including named high-risk rules. Render it in a Markdown
   preview; do not present it as a posted PR comment.

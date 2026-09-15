@@ -374,6 +374,7 @@ export function Demo() {
               <label>
                 Priority
                 <select
+                  aria-label="Priority"
                   value={severity}
                   onChange={(e) => setSeverity(e.target.value)}
                 >
@@ -385,7 +386,11 @@ export function Demo() {
               </label>
               <label>
                 Rule type
-                <select value={type} onChange={(e) => setType(e.target.value)}>
+                <select
+                  aria-label="Rule type"
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                >
                   <option value="">All types</option>
                   {[...new Set(data.rules.map((r) => r.type))].map((v) => (
                     <option key={v}>{v}</option>
@@ -394,7 +399,11 @@ export function Demo() {
               </label>
               <label>
                 Tag
-                <select value={tag} onChange={(e) => setTag(e.target.value)}>
+                <select
+                  aria-label="Tag"
+                  value={tag}
+                  onChange={(e) => setTag(e.target.value)}
+                >
                   <option value="">All tags</option>
                   {[...new Set(data.rules.flatMap((r) => r.tags))].map((v) => (
                     <option key={v}>{v}</option>
@@ -592,6 +601,9 @@ export function Demo() {
         </details>
         <footer className="report-footer">
           <span>Evidence for this test setup. Not a safety certification.</span>
+          <a href="https://github.com/aravinda-1402/causeval">
+            Source on GitHub
+          </a>
           <Link href="/docs">Ready for your own project? Setup guide →</Link>
         </footer>
       </main>

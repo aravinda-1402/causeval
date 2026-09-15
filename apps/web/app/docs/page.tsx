@@ -37,6 +37,16 @@ export default function Docs() {
           </nav>
         </aside>
         <article className="docs-content">
+          <details className="guide-topics-mobile">
+            <summary>Browse guide topics</summary>
+            <nav aria-label="Guide topics">
+              {sections.map((s) => (
+                <a key={s} href={"#" + s.toLowerCase().replaceAll(" ", "-")}>
+                  {s}
+                </a>
+              ))}
+            </nav>
+          </details>
           <span className="quiet-label">START HERE</span>
           <h1>From a rule to a useful test.</h1>
           <p className="docs-lead">

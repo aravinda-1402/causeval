@@ -7,10 +7,10 @@
   </g>
   <g font-family="Arial, Helvetica, sans-serif">
     <text x="146" y="113" fill="#edf2f7" font-size="40" font-weight="700">CausEval</text>
-    <text x="74" y="254" fill="#edf2f7" font-size="68" font-weight="700" letter-spacing="-2">Code has coverage.</text>
-    <text x="74" y="340" fill="#8ee6bc" font-size="68" font-weight="700" letter-spacing="-2">Your prompts should too.</text>
-    <text x="78" y="426" fill="#acb6c4" font-size="28">Do your LLM evals protect the rules in your system prompt?</text>
-    <text x="78" y="540" fill="#edf2f7" font-size="27" letter-spacing="3">CONTRACT  ·  TRACE  ·  VERIFY</text>
+    <text x="74" y="254" fill="#edf2f7" font-size="68" font-weight="700" letter-spacing="-2">Do your tests catch</text>
+    <text x="74" y="340" fill="#8ee6bc" font-size="68" font-weight="700" letter-spacing="-2">missing AI rules?</text>
+    <text x="78" y="426" fill="#acb6c4" font-size="28">See what is covered, find the gaps, and know what to test next.</text>
+    <text x="78" y="540" fill="#edf2f7" font-size="27" letter-spacing="3">COVERAGE  ·  GAPS  ·  NEXT STEPS</text>
     <text x="1124" y="540" text-anchor="end" fill="#acb6c4" font-size="21">Free + open source</text>
   </g>
 </svg>

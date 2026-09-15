@@ -4,14 +4,12 @@
 
 Created by [Aravinda Raman Jatavallabha](https://github.com/aravinda-1402).
 
-CausEval checks whether your LLM eval suite actually protects the behavioral
-rules in your system prompt, under the tested model and configuration.
-It extracts the behavioral contract from your system prompt, maps it to your
-existing evals, then removes one rule at a time and re-runs the evals that were
-supposed to cover it. If the tests still pass without the rule, the experiment
-found no evidence that those tests depend on that instruction.
+CausEval checks whether your AI tests catch missing instructions. It finds the
+rules in your system prompt, links them to your tests, then removes one rule at
+a time and repeats those tests. See what was detected, what was missed, and what
+to test next. Results apply to the tested model and configuration.
 
-![CausEval dashboard showing 75% Trace Coverage, 42% Causal Rule Coverage, and an inspectable table of behavioral rules](docs/images/coverage-overview.png)
+[![CausEval example report: 5 rule removals detected, 4 missed, 3 rules with no linked test, and a list ordered by review priority](docs/images/coverage-overview.png)](docs/images/causeval-launch.mp4)
 
 _The bundled support-agent fixture: 12 rules, 9 evals, and a passing baseline
 with a measurable coverage gap. These are reproducible fixture results, not a
@@ -21,7 +19,7 @@ benchmark of a live model._
 [Use your own prompt](#use-your-own-prompt-and-evals) ·
 [CLI reference](#cli) · [Documentation](#documentation)
 
-[30-second walkthrough](docs/images/causeval-launch.mp4)
+[Watch or download the 30-second walkthrough](docs/images/causeval-launch.mp4)
 
 ## What you can do
 
@@ -125,22 +123,29 @@ Until publication, use `pnpm causeval` from the checkout in place of
 
 ## A guided tour of the app
 
-### 1. Start with the coverage overview
+### 1. Start with a clear result
 
-Open `/demo/` and compare the summary cards. **Trace Coverage** asks whether a
-rule has a credible eval mapping; **Causal Rule Coverage** asks whether removing
-it produced a sufficient drop in eval pass rate, with a stable baseline.
-Click a metric's explanation button to see how the number is calculated.
+Open `/demo/`. The example starts with three results:
 
-Use the rule search or **Filters** to narrow the table by severity and other
-available criteria. Begin with critical or high-severity rules, then investigate
-uncovered and pseudo-covered findings.
+| Result               | Meaning                                               | Technical term   |
+| -------------------- | ----------------------------------------------------- | ---------------- |
+| **Removal detected** | Tests reliably caught the missing instruction.        | Causally covered |
+| **Removal missed**   | Tests still passed after removing the instruction.    | Pseudo-covered   |
+| **No test linked**   | No existing test was confidently matched to the rule. | Uncovered        |
+
+Choose **Review the first gap**, or browse the rules in priority order. Search,
+result filters, and optional priority/type/tag filters help narrow the list.
+Switch to **Matrix** when you want to inspect the rule-to-test mappings. Both
+views keep your filters. **How this report was calculated** explains trace and
+causal coverage without crowding the initial view.
 
 ### 2. Open a rule and follow the evidence
 
-Search for `email` and click the rule about explicit user confirmation. The
-drawer shows the source instruction, its mapped eval, the exact removal, and
-the baseline and mutant outcomes.
+Search for `email` and select the rule about explicit user confirmation. The
+drawer starts with **What happened** and **What to do next**. **Test results**
+shows the before-and-after outcomes; **View original instruction** and **View
+the exact change** expand the source and removal diff. **Technical details**
+keeps the mapping rationale, confidence, and stable rule identity available.
 
 ![Rule evidence drawer showing the email-confirmation instruction removed while its eval still passes, with experiment limitations alongside](docs/images/rule-evidence.png)
 
@@ -149,8 +154,10 @@ is **pseudo-coverage**: under this configuration, the eval did not detect the
 removal. Check **What this cannot rule out** before interpreting the result;
 model priors or another instruction may preserve the behavior.
 
-Open **Suggested evals** to inspect candidate cases for missing dimensions.
-They are proposals for human review, and are marked **GENERATED — UNREVIEWED**.
+Open **Suggested tests** to inspect candidate cases for missing dimensions.
+They are labelled **Draft suggestions — review before use** in the web app.
+These unrun drafts do not count toward coverage. The CLI retains the explicit
+**GENERATED — UNREVIEWED** status until a developer accepts them.
 
 ### 3. Read and share the standalone report
 

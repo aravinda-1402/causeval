@@ -239,6 +239,7 @@
   max-width: 1200px;
   padding: 26px 36px 36px;
   margin: 0 auto;
+  min-width: 0;
 }
 .example-notice {
   display: flex;
@@ -598,6 +599,9 @@ summary:focus-visible {
   font-weight: 500;
   line-height: 1.55;
 }
+.rule-row-copy {
+  min-width: 0;
+}
 .rule-row-copy > span {
   display: flex;
   flex-wrap: wrap;
@@ -815,6 +819,35 @@ summary:focus-visible {
 .docs-content {
   min-width: 0;
 }
+.docs-content .button-primary {
+  color: #0a2418;
+}
+html[data-theme="light"] .docs-content .button-primary {
+  color: #fff;
+}
+.docs-content .button-outline {
+  color: var(--text);
+}
+.guide-topics-mobile {
+  display: none;
+}
+.guide-topics-mobile summary {
+  min-height: 44px;
+  padding: 10px 0;
+  color: var(--muted);
+}
+.guide-topics-mobile nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 18px;
+  padding: 12px 0;
+}
+.guide-topics-mobile a {
+  font-size: 0.875rem;
+  min-height: 36px;
+  display: inline-flex;
+  align-items: center;
+}
 .docs-sidebar summary {
   list-style: none;
   font-size: 0.875rem;
@@ -936,6 +969,14 @@ summary:focus-visible {
   }
 }
 @media (max-width: 520px) {
+  .docs-layout > .docs-sidebar {
+    display: none;
+  }
+  .guide-topics-mobile {
+    display: block;
+    margin-bottom: 20px;
+    border-bottom: 1px solid var(--border);
+  }
   .simple-header {
     height: auto;
     min-height: 72px;
@@ -1162,5 +1203,49 @@ summary:focus-visible {
     min-height: 44px;
     display: flex;
     align-items: center;
+  }
+}
+@media (max-width: 420px) {
+  html,
+  body {
+    overflow-x: clip;
+  }
+  .simple-header .nav-wrap {
+    padding-left: 12px;
+    padding-right: 12px;
+    gap: 4px 8px;
+  }
+  .simple-header nav {
+    margin-left: 0;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+  .simple-header .nav-actions {
+    margin-left: auto;
+  }
+  .welcome,
+  .welcome-copy,
+  .example-preview {
+    min-width: 0;
+    width: 100%;
+  }
+  .welcome-copy h1,
+  .example-preview h2,
+  .preview-finding strong {
+    overflow-wrap: anywhere;
+  }
+  .simple-home .page-width {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  .report-page {
+    overflow-x: clip;
+  }
+  .rule-row-copy > strong {
+    overflow-wrap: anywhere;
+  }
+  .report-page .status-badge {
+    white-space: normal;
+    max-width: 100%;
   }
 }
