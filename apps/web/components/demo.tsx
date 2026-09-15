@@ -23,6 +23,7 @@ import {
 } from "lucide-react";
 import { Header } from "./header";
 import { Button } from "./ui/button";
+import { asset } from "@/lib/utils";
 import data from "@/lib/demo-data.json";
 type Rule = (typeof data.rules)[number];
 const labels: Record<string, string> = {
@@ -252,10 +253,10 @@ export function Demo() {
               <ArrowDownToLine size={16} /> Download report
             </summary>
             <div>
-              <a href="/demo.json" download="causeval-report.json">
+              <a href={asset("/demo.json")} download="causeval-report.json">
                 JSON data <ArrowDownToLine size={15} />
               </a>
-              <a href="/report.html" target="_blank" rel="noreferrer">
+              <a href={asset("/report.html")} target="_blank" rel="noreferrer">
                 Full HTML report ↗
               </a>
             </div>

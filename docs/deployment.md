@@ -17,6 +17,29 @@ install from the workspace root with `pnpm install --frozen-lockfile`. The build
 command is `pnpm --filter @causeval/web build` (or plain `next build` inside
 `apps/web`). Output is `apps/web/out`. Use Node.js 22.
 
+## GitHub Pages
+
+`.github/workflows/pages.yml` builds and publishes the site on every push to
+`main`. Enable it once, in the repository: **Settings -> Pages -> Build and
+deployment -> Source: GitHub Actions**. The workflow then deploys to
+`https://<owner>.github.io/<repo>/`.
+
+A project site is served from a subpath, so the workflow sets
+`NEXT_PUBLIC_BASE_PATH` to `/<repo>` and the export is built with a matching
+`basePath` and `assetPrefix`. Without it every asset, internal link and
+`/report.html` would 404. The variable is empty by default, so `pnpm dev` and
+`scripts/serve-static.mjs` keep working at the root.
+
+Next.js rewrites `<Link>` automatically but not plain `<a href="/...">`, so
+files served straight from `public/` go through the `asset()` helper in
+`apps/web/lib/utils.ts`. Use it for anything new you add to `public/`.
+
+The workflow also writes `.nojekyll` into the output. Pages runs Jekyll by
+default, which strips the `_next` directory and leaves the site unstyled.
+
+For a custom domain at the root, drop `NEXT_PUBLIC_BASE_PATH` from the workflow
+and set `NEXT_PUBLIC_SITE_URL` to that origin.
+
 ## Any static host
 
 `pnpm build` produces `apps/web/out`, which can be served directly. Directory

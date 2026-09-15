@@ -1,0 +1,44 @@
+name: Deploy website
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+# Pages deployment needs id-token and pages write; nothing else is granted.
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+# Let a running deploy finish rather than cancelling it mid-publish.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build the static export for this Pages URL
+        # A project site is served from /<repo>, so the export needs a matching
+        # basePath or every asset and internal link 404s.
+        env:
+          NEXT_PUBLIC_SITE_URL: https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}
+          NEXT_PUBLIC_BASE_PATH: /${{ github.event.repository.name }}
+        run: pnpm build
+      - name: Disable Jekyll
+        # Without this, Pages strips the _next directory and the site loads unstyled.
+        run: touch apps/web/out/.nojekyll
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: apps/web/out
+      - id: deployment
+        uses: actions/deploy-pages@v4
