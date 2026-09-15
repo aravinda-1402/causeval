@@ -37,6 +37,10 @@ jobs:
         # Without this, Pages strips the _next directory and the site loads unstyled.
         run: touch apps/web/out/.nojekyll
       - uses: actions/configure-pages@v5
+        # Creates the Pages site if it does not exist yet, so a fresh repo or a
+        # fork does not need the Settings -> Pages toggle flipped by hand.
+        with:
+          enablement: true
       - uses: actions/upload-pages-artifact@v3
         with:
           path: apps/web/out
