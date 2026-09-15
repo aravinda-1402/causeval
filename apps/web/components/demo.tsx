@@ -183,9 +183,12 @@ export function Demo() {
           .includes(query.trim().toLowerCase()),
     )
     .sort((a, b) => priority(a) - priority(b));
-  const firstGap = [...data.rules]
-    .sort((a, b) => priority(a) - priority(b))
-    .find((rule) => statusFor(rule.id) !== "causally-covered")!;
+  const byPriority = [...data.rules].sort((a, b) => priority(a) - priority(b));
+  // Lead with a rule that has before/after evidence: an uncovered rule opens on
+  // an empty drawer, which teaches a first-time reader nothing.
+  const firstGap =
+    byPriority.find((rule) => statusFor(rule.id) === "pseudo-covered") ??
+    byPriority.find((rule) => statusFor(rule.id) !== "causally-covered")!;
   const metrics = [
     {
       name: "Removal detected",
@@ -287,12 +290,12 @@ export function Demo() {
             <span className="quiet-label">START HERE</span>
             <h2>{s.highRiskUnprotected} high-priority rules need review.</h2>
             <p>
-              Start with the rules marked critical or high. Open a rule to see
-              what happened and what to test next.
+              The clearest place to start is a test that kept passing after its
+              rule was removed. Open it to see the before-and-after evidence.
             </p>
           </div>
           <Button onClick={() => openRule(firstGap)}>
-            Review the first gap <ArrowRight size={17} />
+            See a missed removal <ArrowRight size={17} />
           </Button>
         </section>
         <section className="rules-panel" aria-labelledby="rules-title">

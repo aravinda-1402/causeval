@@ -6,10 +6,18 @@ import {
   CircleDashed,
   TriangleAlert,
 } from "lucide-react";
-import { Header } from "@/components/header";
+import { Header, REPO_URL } from "@/components/header";
+import { CopyBlock } from "@/components/copy";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import data from "@/lib/demo-data.json";
+const QUICKSTART = [
+  "git clone https://github.com/aravinda-1402/causeval.git",
+  "cd causeval",
+  "pnpm install --frozen-lockfile",
+  "pnpm build",
+  "pnpm causeval demo",
+] as const;
 export const metadata = process.env.NEXT_PUBLIC_SITE_URL
   ? { alternates: { canonical: process.env.NEXT_PUBLIC_SITE_URL } }
   : {};
@@ -128,24 +136,34 @@ export default function Home() {
           </div>
         </section>
         <section className="simple-start page-width">
-          <div>
-            <h2>
-              Start with an example. Bring your project when you’re ready.
-            </h2>
+          <div className="simple-start-copy">
+            <span className="quiet-label">WHEN YOU’RE READY</span>
+            <h2>Run it on your own prompt.</h2>
             <p>
-              The example opens right in your browser. Testing your own AI uses
-              the developer setup.
+              The example above needs nothing installed. To check your own AI,
+              point CausEval at your prompt and your existing tests.
             </p>
-            <span>
-              <Check size={16} /> Open source <Check size={16} /> Works with
-              existing tests
+            <span className="simple-start-marks">
+              {["Apache-2.0", "No telemetry", "Works with existing tests"].map(
+                (mark) => (
+                  <span key={mark}>
+                    <Check size={16} /> {mark}
+                  </span>
+                ),
+              )}
             </span>
+            <div className="simple-start-actions">
+              <Button asChild variant="outline">
+                <Link href="/docs">
+                  Setup guide <ArrowRight size={17} />
+                </Link>
+              </Button>
+              <a className="text-link" href={REPO_URL}>
+                Star the repository
+              </a>
+            </div>
           </div>
-          <Button asChild variant="outline">
-            <Link href="/docs">
-              Setup guide <ArrowRight size={17} />
-            </Link>
-          </Button>
+          <CopyBlock title="Terminal · Node 22+" lines={QUICKSTART} />
         </section>
       </main>
       <footer className="site-footer page-width simple-footer">

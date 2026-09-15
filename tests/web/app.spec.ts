@@ -22,6 +22,17 @@ test("landing gives one clear path into the example", async ({ page }) => {
     "content",
     /social-preview\.png$/,
   );
+  // The repository has to be reachable from every page, not just the footer,
+  // and the link keeps its name at mobile width where the label is hidden.
+  await expect(
+    page.getByRole("link", { name: "Star CausEval on GitHub" }),
+  ).toHaveAttribute("href", "https://github.com/aravinda-1402/causeval");
+  // Developers need a copyable source path without leaving the landing page.
+  const quickstart = page.locator(".copy-block");
+  await expect(quickstart).toContainText(
+    "git clone https://github.com/aravinda-1402/causeval.git",
+  );
+  await expect(quickstart).toContainText("pnpm causeval demo");
   await page
     .getByRole("link", { name: "Explore the example", exact: true })
     .click();
@@ -139,4 +150,16 @@ test("standalone report and guide remain available", async ({ page }) => {
       () => document.documentElement.scrollWidth <= innerWidth,
     ),
   ).toBe(true);
+});
+
+test("the start-here action opens a rule with before-and-after evidence", async ({
+  page,
+}) => {
+  await page.goto("/demo/");
+  await page.getByRole("button", { name: /See a missed removal/ }).click();
+  const dialog = page.getByRole("dialog");
+  // An uncovered rule has an empty drawer, which teaches a first reader nothing.
+  await expect(dialog).toContainText("BEFORE AND AFTER");
+  await expect(dialog.locator(".pass-chip, .fail-chip").first()).toBeVisible();
+  await expect(page).toHaveURL(new RegExp("rule=" + missed.id));
 });
