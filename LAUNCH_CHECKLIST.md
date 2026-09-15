@@ -1,64 +1,99 @@
 # Remaining launch actions
 
-Only actions that remain are listed here. Local verification evidence is in
-[docs/validation.md](docs/validation.md); finding-by-finding disposition is in
+Pick up here. Verification evidence is in [docs/validation.md](docs/validation.md);
+finding-by-finding audit disposition is in
 [CAUSEVAL_AUDIT_RESOLUTION.md](CAUSEVAL_AUDIT_RESOLUTION.md).
 
-## Engineering / research
+## Where things stand
 
-- [ ] Run one budgeted live smoke test with your intended provider/model and
-      record extraction/mapping mistakes, counts and cost in `docs/validation.md`.
-      No provider credentials or local endpoint were available in this pass.
-      Use [the support project](examples/support-agent/README.md) after changing
-      its provider, or [the sandbox tool example](examples/tool-agent/README.md).
-      Keep the fixture disclaimer and do not publish quality claims from one run.
+`causeval@0.1.1` is live on npm. The site, docs, media and CI are current and
+green. Two things gate the launch post: a live-provider smoke test, and the
+GitHub release and tags.
 
-## GitHub
+Working branch is `launch-completion-public`, pushed to `origin/main`. Build
+with pnpm 10 and Node 22 (`pnpm install --frozen-lockfile && pnpm build`). The
+full gate is `pnpm lint`, `format:check`, `typecheck`, `test`, `test:web`,
+`release:check` and `pnpm audit`.
 
-- [x] Review and push the final changes, including the immutable audit and its
-      resolution; hosted CI passed for commit `28e13af`.
-- [ ] Upload `docs/images/social-preview.png` as repository social preview,
-      set the website URL after deployment, and confirm the private vulnerability
-      reporting contact path. Repository settings were not modified.
+## 1. Live-provider smoke test — the last real blocker
 
-Suggested topics, if useful: `llm-evaluation`, `system-prompts`, `ai-testing`,
-`behavioral-testing`, `mutation-testing`, `developer-tools`, `typescript`,
-`github-actions`. Current description is already accurate; no branding change
-is needed.
+- [ ] Run one budgeted smoke test against your intended provider and model, and
+      record it in `docs/validation.md`.
 
-## Package
+Everything verified so far is deterministic fixture work. It proves the method
+and the interface; it has never measured extraction or judging quality against a
+real model. Until this runs, that quality is an unmeasured claim.
 
-- [x] Publish the reviewed **0.1.1** CLI. `causeval@0.1.1` is live on npm;
-      `npx --yes causeval@0.1.1 demo` was verified in an empty directory outside
-      the repository. The CLI bundles core; a separate core publication is
-      optional. Pending-publication notices have been removed and the npm
-      quick-start now leads, with source-checkout instructions kept below it.
+```bash
+npx causeval init --dir ./my-agent
+# point my-agent/causeval.config.ts at a real provider, then:
+npx causeval scan   --config ./my-agent/causeval.config.ts --verbose
+npx causeval verify --config ./my-agent/causeval.config.ts --runs 3 --verbose
+```
 
-## Website
+Run `scan` first and read the extracted rules before spending anything on
+`verify` — everything downstream depends on extraction being right. `verify`
+re-runs every mapped eval repeatedly per rule; `--verbose` prints the provider
+request count so the spend stays visible.
 
-- [x] Set `NEXT_PUBLIC_SITE_URL` to the chosen HTTPS origin and deploy
-      `apps/web/out` using [the deployment guide](docs/deployment.md). Build with
-      `pnpm build` after setting that variable. Verify `/`, `/demo/`, `/docs/`,
-      `/report.html` and `/social-preview.png` on the public domain.
+Record: model and date, rules extracted versus rules correct, bad mappings,
+request count and rough cost, and the resulting Trace and Causal coverage.
+Negative results are the useful ones. Keep the fixture disclaimer and do not
+publish quality claims from a single run. Alternatives: the
+[support project](examples/support-agent/README.md) with its provider changed,
+or the [sandbox tool example](examples/tool-agent/README.md).
 
-The temporary hosted preview passed all five routes and desktop/mobile tests, then was made private at the owner's request.
+## 2. Tags and GitHub release
 
-## Release / Zenodo
+- [ ] Create an immutable `v0.1.1` tag on the released commit.
+- [ ] Move the floating `v0` tag to the same commit.
+- [ ] Publish the 0.1.1 release from that tag.
 
-- [ ] Confirm the existing release's visibility in your GitHub account. Its
-      existence was supplied by you; the public API listed no visible releases.
-      The existing `v0` tag was verified and must not be moved or recreated.
-- [ ] If distributing these fixes through a GitHub release, publish a **new
-      0.1.1 patch** from the reviewed commit. Preserve all existing releases/tags.
-- [ ] If a DOI is desired, connect the repository to Zenodo and archive the
-      chosen stable release. CITATION.cff, author metadata, Apache-2.0 and version
-      are prepared. Add the real DOI to citation metadata/badge only after issuance.
+`v0` currently points at `c9c0124`, the initial commit, so anyone using
+`aravinda-1402/causeval/packages/action@v0` gets the original code rather than
+0.1.1. A floating major tag is the GitHub Actions convention —
+`actions/checkout@v4` moves with every 4.x release and users pinning it expect
+fixes. Moving `v0` forward is the normal release action; `v0.1.1` stays fixed
+for anyone who wants an exact pin.
 
-## Demo / LinkedIn
+```bash
+git tag -a v0.1.1 -m "CausEval 0.1.1"
+git push origin v0.1.1
+git tag -f v0 && git push --force origin v0
+```
 
-- [x] Prepare the [demo walkthrough](docs/launch-demo.md) with actual fixture
-      numbers and its visible limitation notice. A captioned 43-second MP4
-      recording is available at `docs/images/causeval-launch.mp4`; regenerate it
-      with `node scripts/capture-media.mjs`.
-- [ ] Publish the launch post after npm publication and the live-provider smoke
-      test are complete.
+Also confirm whether the pre-existing release is visible in the account; the
+public API previously listed none.
+
+## 3. Optional: Zenodo DOI
+
+- [ ] Connect the repository to Zenodo and archive the chosen stable release.
+      `CITATION.cff`, author metadata, Apache-2.0 and version are prepared. Add
+      the DOI to citation metadata and any badge only after it is issued.
+
+## 4. Launch post
+
+- [ ] Publish after items 1 and 2 are done.
+
+Draft text and the recording sequence are in
+[docs/launch-demo.md](docs/launch-demo.md). The walkthrough video is
+`docs/images/causeval-launch.mp4`; regenerate it with
+`node scripts/capture-media.mjs`.
+
+## Done
+
+- [x] Publish `causeval@0.1.1` to npm. `npx --yes causeval@0.1.1 demo` verified
+      in an empty directory outside the repository. Pending-publication notices
+      removed; the npm quick start now leads, with the source checkout below it.
+- [x] Upload the repository social preview.
+- [x] Push the final changes, including the immutable audit and its resolution.
+- [x] Deploy and verify the website routes. The temporary hosted preview passed
+      all five routes and desktop/mobile tests, then was made private at the
+      owner's request.
+- [x] Prepare the captioned demo walkthrough with actual fixture numbers and its
+      visible limitation notice.
+
+Still worth setting if you have not: the repository website URL, the private
+vulnerability reporting contact path, and topics — `llm-evaluation`,
+`system-prompts`, `ai-testing`, `behavioral-testing`, `mutation-testing`,
+`developer-tools`, `typescript`, `github-actions`.
