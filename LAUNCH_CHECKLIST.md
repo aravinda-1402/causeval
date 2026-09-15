@@ -6,9 +6,12 @@ finding-by-finding audit disposition is in
 
 ## Where things stand
 
-`causeval@0.1.1` is live on npm. The site, docs, media and CI are current and
-green. Two things gate the launch post: a live-provider smoke test, and the
-GitHub release and tags.
+`causeval@0.1.1` is live on npm and the website is live at
+<https://aravinda-1402.github.io/causeval/>. Tags are cut, docs and media are
+current, and CI is green.
+
+**One thing gates the launch post: the live-provider smoke test.** Everything
+else below is optional or cosmetic.
 
 Working branch is `launch-completion-public`, pushed to `origin/main`. Build
 with pnpm 10 and Node 22 (`pnpm install --frozen-lockfile && pnpm build`). The
@@ -43,24 +46,26 @@ publish quality claims from a single run. Alternatives: the
 [support project](examples/support-agent/README.md) with its provider changed,
 or the [sandbox tool example](examples/tool-agent/README.md).
 
-## 2. Tags and GitHub release
+## 2. GitHub release and the floating tag
 
-- [ ] Create an immutable `v0.1.1` tag on the released commit.
-- [ ] Move the floating `v0` tag to the same commit.
-- [ ] Publish the 0.1.1 release from that tag.
+- [ ] Publish the 0.1.1 release from the `v0.1.1` tag.
+- [ ] Optional: move `v0` forward to the tip of `main`.
 
-`v0` currently points at `c9c0124`, the initial commit, so anyone using
-`aravinda-1402/causeval/packages/action@v0` gets the original code rather than
-0.1.1. A floating major tag is the GitHub Actions convention —
-`actions/checkout@v4` moves with every 4.x release and users pinning it expect
-fixes. Moving `v0` forward is the normal release action; `v0.1.1` stays fixed
-for anyone who wants an exact pin.
+Both tags exist and are pushed. `v0` and `v0.1.1` point at `20970ad`, which is
+behind `main` by the two GitHub Pages commits. Those touch only
+`.github/workflows/`, `apps/web` and docs — not `packages/action` or
+`packages/cli` — so consumers of `packages/action@v0` and `causeval@0.1.1` get
+identical behaviour either way.
+
+If you want `v0` tracking latest, which is the GitHub Actions convention
+(`actions/checkout@v4` moves with every 4.x release):
 
 ```bash
-git tag -a v0.1.1 -m "CausEval 0.1.1"
-git push origin v0.1.1
-git tag -f v0 && git push --force origin v0
+git tag -f v0 main && git push --force origin v0
 ```
+
+Leave `v0.1.1` where it is. Moving an immutable tag after publishing it is the
+thing worth avoiding.
 
 Also confirm whether the pre-existing release is visible in the account; the
 public API previously listed none.
@@ -71,9 +76,20 @@ public API previously listed none.
       `CITATION.cff`, author metadata, Apache-2.0 and version are prepared. Add
       the DOI to citation metadata and any badge only after it is issued.
 
-## 4. Launch post
+## 4. Repository metadata
 
-- [ ] Publish after items 1 and 2 are done.
+- [ ] Put <https://aravinda-1402.github.io/causeval/> in the repository website
+      field (the gear beside "About") and near the top of the README. The site
+      is live but nothing links to it yet, so visitors still have no clickable
+      demo.
+- [ ] Set the private vulnerability reporting contact path.
+- [ ] Topics, if not already set: `llm-evaluation`, `system-prompts`,
+      `ai-testing`, `behavioral-testing`, `mutation-testing`, `developer-tools`,
+      `typescript`, `github-actions`.
+
+## 5. Launch post
+
+- [ ] Publish after item 1 is done.
 
 Draft text and the recording sequence are in
 [docs/launch-demo.md](docs/launch-demo.md). The walkthrough video is
@@ -86,14 +102,11 @@ Draft text and the recording sequence are in
       in an empty directory outside the repository. Pending-publication notices
       removed; the npm quick start now leads, with the source checkout below it.
 - [x] Upload the repository social preview.
+- [x] Deploy the website to GitHub Pages. `.github/workflows/pages.yml` builds
+      and publishes on every push to `main` and enables Pages on first run. The
+      export is built with a matching `basePath`, since a project site is served
+      from `/<repo>`; all five routes and the CSS were verified live.
+- [x] Create `v0.1.1` and move `v0` off the initial commit.
 - [x] Push the final changes, including the immutable audit and its resolution.
-- [x] Deploy and verify the website routes. The temporary hosted preview passed
-      all five routes and desktop/mobile tests, then was made private at the
-      owner's request.
 - [x] Prepare the captioned demo walkthrough with actual fixture numbers and its
       visible limitation notice.
-
-Still worth setting if you have not: the repository website URL, the private
-vulnerability reporting contact path, and topics — `llm-evaluation`,
-`system-prompts`, `ai-testing`, `behavioral-testing`, `mutation-testing`,
-`developer-tools`, `typescript`, `github-actions`.
