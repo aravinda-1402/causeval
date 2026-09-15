@@ -1,12 +1,17 @@
-# A 30-second CausEval walkthrough
+# The CausEval walkthrough
 
 Use the actual deterministic support fixture. Keep the saved-example notice
 visible. Do not substitute invented pass rates or coverage.
 
-A prepared 30-second walkthrough is available at
-[`docs/images/causeval-launch.mp4`](images/causeval-launch.mp4). It uses the
-actual overview, mutation-evidence, suggested-test and social-preview states;
-the on-screen fixture disclaimer remains visible.
+A prepared 43-second walkthrough is available at
+[`docs/images/causeval-launch.mp4`](images/causeval-launch.mp4). It is a real
+browser recording of the bundled example, with lower-third captions burned in;
+the on-screen fixture disclaimer remains visible throughout.
+
+Regenerate it with `node scripts/capture-media.mjs` (see
+[`docs/images/README.md`](images/README.md)). The captions are anchored to marks
+the recorder measures, so they stay aligned even though each run's timing
+differs slightly.
 
 ## Prepare
 
@@ -25,15 +30,19 @@ Record a 1440-pixel-wide window, enlarge text if needed, and hide unrelated tabs
 
 ## Recording sequence
 
-| Time   | Show                                   | On-screen message                                                 |
-| ------ | -------------------------------------- | ----------------------------------------------------------------- |
-| 0–4s   | Landing page: one clear starting point | “Do your tests catch missing AI rules?”                           |
-| 4–9s   | Example report: three result cards     | “Detected, missed, or no test linked.”                            |
-| 9–14s  | Priority-sorted rules list             | “Start with the gaps that need attention.”                        |
-| 14–21s | R06 Test results drawer                | “The instruction is gone. The test still passes.”                 |
-| 21–26s | R06 Suggested tests                    | “Draft suggestions are for review, not included in coverage.”     |
-| 26–30s | Landing page / repository              | “Simple to start. Technical detail when you need it.”             |
-| 26–30s | Social card and repository URL         | “Code has coverage. Your prompts should too. Free + open source.” |
+`scripts/capture-media.mjs` records this sequence. Approximate times are from
+the current recording; the script derives the real ones per run.
+
+| Time   | Show                                     | Caption                                                        |
+| ------ | ---------------------------------------- | -------------------------------------------------------------- |
+| 0–5s   | Landing page: one clear starting point   | “Your prompt has rules. Do your tests actually check them?”    |
+| 5–11s  | How it works, then the source quickstart | “Free and open source. Works with the tests you already have.” |
+| 12–19s | Example report: three result cards       | “Removal detected, removal missed, or no test linked.”         |
+| 19–23s | R06 drawer: what happened, what next     | “This test passed even after its rule was removed.”            |
+| 23–26s | The before-and-after experiment          | “Same evals before and after. Three of three pass either way.” |
+| 26–29s | Verdict and its stated limitations       | (no caption; the verdict text is the point)                    |
+| 29–35s | R06 Suggested tests                      | “CausEval drafts the missing test cases for you to review.”    |
+| 36–43s | Back to the landing page                 | “Code has coverage. Your prompts should too.”                  |
 
 The mapped test asks for a draft, not a send. The fixture intentionally supplies
 an overconfident mapping to show how verification can challenge it. This is not

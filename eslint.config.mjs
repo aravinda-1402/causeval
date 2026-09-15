@@ -30,6 +30,7 @@ export default ts.config(
         Buffer: "readonly",
         document: "readonly",
         window: "readonly",
+        localStorage: "readonly",
         navigator: "readonly",
         Blob: "readonly",
       },

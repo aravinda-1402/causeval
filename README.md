@@ -2,6 +2,11 @@
 
 **Code has coverage. Your prompts should too.**
 
+[![CI](https://github.com/aravinda-1402/causeval/actions/workflows/ci.yml/badge.svg)](https://github.com/aravinda-1402/causeval/actions/workflows/ci.yml)
+[![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
+[![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](package.json)
+[![Stars](https://img.shields.io/github/stars/aravinda-1402/causeval?label=stars)](https://github.com/aravinda-1402/causeval/stargazers)
+
 Created by [Aravinda Raman Jatavallabha](https://github.com/aravinda-1402).
 
 CausEval checks whether your AI tests catch missing instructions. It finds the
@@ -19,7 +24,7 @@ benchmark of a live model._
 [Use your own prompt](#use-your-own-prompt-and-evals) ·
 [CLI reference](#cli) · [Documentation](#documentation)
 
-[Watch or download the 30-second walkthrough](docs/images/causeval-launch.mp4)
+[Watch or download the 43-second walkthrough](docs/images/causeval-launch.mp4)
 
 ## What you can do
 
@@ -133,7 +138,7 @@ Open `/demo/`. The example starts with three results:
 | **Removal missed**   | Tests still passed after removing the instruction.    | Pseudo-covered   |
 | **No test linked**   | No existing test was confidently matched to the rule. | Uncovered        |
 
-Choose **Review the first gap**, or browse the rules in priority order. Search,
+Choose **See a missed removal**, or browse the rules in priority order. Search,
 result filters, and optional priority/type/tag filters help narrow the list.
 Switch to **Matrix** when you want to inspect the rule-to-test mappings. Both
 views keep your filters. **How this report was calculated** explains trace and

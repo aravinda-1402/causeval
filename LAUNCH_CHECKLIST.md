@@ -63,8 +63,9 @@ The temporary hosted preview passed all five routes and desktop/mobile tests, th
 
 ## Demo / LinkedIn
 
-- [x] Prepare the [30-second demo](docs/launch-demo.md) with actual fixture
-      numbers and its visible limitation notice. A 30-second MP4 walkthrough is
-      available at `docs/images/causeval-launch.mp4`.
+- [x] Prepare the [demo walkthrough](docs/launch-demo.md) with actual fixture
+      numbers and its visible limitation notice. A captioned 43-second MP4
+      recording is available at `docs/images/causeval-launch.mp4`; regenerate it
+      with `node scripts/capture-media.mjs`.
 - [ ] Publish the launch post after npm publication and the live-provider smoke
       test are complete.
