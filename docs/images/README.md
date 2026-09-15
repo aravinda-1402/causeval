@@ -3,12 +3,12 @@
 These PNGs show the current CausEval interface using the bundled, deterministic
 support-agent fixture. They do not show live model results.
 
-| Image                    | Screen                                                                  |
-| ------------------------ | ----------------------------------------------------------------------- |
-| `coverage-overview.png`  | `/demo/`, dark theme, 1440 × 1050 viewport.                             |
-| `rule-evidence.png`      | `/demo/?rule=R06`, rule details drawer, 1440 × 1050 viewport.            |
-| `standalone-report.png`  | `/report.html`, dark theme, 1440 × 1050 viewport.                       |
-| `causeval-launch.mp4`    | 30-second screenshot walkthrough of the public demo sequence.          |
+| Image                   | Screen                                                        |
+| ----------------------- | ------------------------------------------------------------- |
+| `coverage-overview.png` | `/demo/`, dark theme, 1440 × 1050 viewport.                   |
+| `rule-evidence.png`     | `/demo/?rule=R06`, rule details drawer, 1440 × 1050 viewport. |
+| `standalone-report.png` | `/report.html`, dark theme, 1440 × 1050 viewport.             |
+| `causeval-launch.mp4`   | 30-second screenshot walkthrough of the public demo sequence. |
 
 To refresh: run `pnpm build`, start `node scripts/serve-static.mjs`, and open
 the routes above at `http://127.0.0.1:3000`. Capture with Playwright into
