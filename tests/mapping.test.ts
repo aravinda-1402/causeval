@@ -15,6 +15,16 @@ import { StubProvider, rule, evalCase } from "./helpers.js";
  */
 const TOPIC_TRAPS = [
   {
+    name: "below-threshold refund does not exercise the approval boundary",
+    rule: rule({
+      quote: "Refunds above $100 require manager approval.",
+      type: "boundary",
+    }),
+    eval: evalCase("refund-50", "Refund $50.", {
+      behavior: "Process the small refund.",
+    }),
+  },
+  {
     name: "definition question about the governed action",
     rule: rule({
       quote: "Never send an email without explicit user confirmation.",

@@ -53,9 +53,16 @@ export default function Docs() {
           <section id="quick-start">
             <h2>Quick start</h2>
             <p>
-              The fastest way to see what CausEval does. No config, no API key:
+              Try the interactive demo immediately with no setup or API key. For
+              the CLI, npm publication is pending: use a source checkout with
+              Git and Node.js 22+.
             </p>
-            <CopyCommand text="npx causeval demo" />
+            <pre>
+              {
+                "git clone https://github.com/aravinda-1402/causeval.git\ncd causeval\nnpx --yes pnpm@10.17.1 install --frozen-lockfile\nnpx --yes pnpm@10.17.1 build"
+              }
+            </pre>
+            <CopyCommand text="npx --yes pnpm@10.17.1 causeval demo" />
             <p>
               It runs the bundled support-agent example end to end and prints
               one causally covered rule, one pseudo-covered rule and one
@@ -64,16 +71,15 @@ export default function Docs() {
             <h3>Your own project</h3>
             <pre>
               {
-                "npm install -D causeval\nnpx causeval init\nnpx causeval scan\nnpx causeval verify"
+                "npx --yes pnpm@10.17.1 causeval init --dir my-agent\nnpx --yes pnpm@10.17.1 causeval scan --config my-agent/causeval.config.ts\nnpx --yes pnpm@10.17.1 causeval verify --config my-agent/causeval.config.ts"
               }
             </pre>
             <p>
               <code>init</code> writes a config, prompt and eval suite pointed
               at the bundled fixture, so both commands work immediately. Change{" "}
               <code>provider</code> and set <code>CAUSEVAL_MODEL</code> to
-              analyse your own prompt with your own model. npm publication is a
-              separate release step; until then, run from a checkout with{" "}
-              <code>pnpm causeval</code>.
+              analyse your own prompt with your own model. Run commands from the
+              checkout and use <code>--config</code> to point at your project.
             </p>
             <h3>No eval suite yet</h3>
             <p>
@@ -83,13 +89,15 @@ export default function Docs() {
             </p>
             <pre>
               {
-                "npx causeval generate\nnpx causeval review --list\nnpx causeval review --accept all"
+                "npx --yes pnpm@10.17.1 causeval init --dir prompt-only --prompt-only\nnpx --yes pnpm@10.17.1 causeval scan --config prompt-only/causeval.config.ts\nnpx --yes pnpm@10.17.1 causeval generate --config prompt-only/causeval.config.ts\nnpx --yes pnpm@10.17.1 causeval review --config prompt-only/causeval.config.ts --list"
               }
             </pre>
             <p>
               Generated cases are written as GENERATED — UNREVIEWED and are
-              excluded from every coverage metric until you accept them, so a
-              generated test can never inflate your coverage number.
+              excluded from every coverage metric until you review and accept
+              them. Use <code>review --accept &lt;id&gt;</code> with the same
+              config. Generated or custom evals require your own provider or
+              runner for verification; the fixture executes only bundled evals.
             </p>
           </section>
           <section id="concepts">

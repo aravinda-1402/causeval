@@ -6,6 +6,9 @@ comment.
 
 ## Minimal usage
 
+**npm publication is pending.** The existing `v0` tag is preserved. Until the
+npm package is published, build this repository in a subdirectory:
+
 ```yaml
 permissions:
   contents: read
@@ -17,11 +20,20 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: "22"
-      - run: npm install -D causeval
-      - uses: aravinda-1402/causeval/packages/action@v0
+      - uses: actions/checkout@v4
+        with:
+          repository: aravinda-1402/causeval
+          path: tools/causeval
+          ref: main # pin a reviewed commit for production CI
+      - run: npx --yes pnpm@10.17.1 install --frozen-lockfile
+        working-directory: tools/causeval
+      - run: npx --yes pnpm@10.17.1 --filter causeval... build
+        working-directory: tools/causeval
+      - uses: ./tools/causeval/packages/action
         with:
           config: causeval.config.ts
           mode: scan
+          cli-path: tools/causeval/packages/cli/dist/index.js
 ```
 
 `contents: read` is enough. Add `pull-requests: write` **only** if you set
@@ -95,10 +107,10 @@ unaffected, and a comment failure is a warning, never a job failure.
     cli-path: packages/cli/dist/index.js
 ```
 
-To use CausEval from another repository before a release tag exists, check this
-repository out to a subdirectory at a pinned commit, build it, and point at
-`./tools/causeval/packages/action`. No remote action tag is claimed to exist
-until it has been published.
+The `v0` release tag already exists. Do not move it to include later fixes.
+The source workflow above uses the current checkout; pin a reviewed commit when
+adopting it. After npm publication, installing `causeval` and selecting a matching
+future patch Action tag can simplify this setup.
 
 ## Safety
 
@@ -120,9 +132,11 @@ percentage moving two points.
 - uses: actions/checkout@v4
   with:
     fetch-depth: 0 # diff needs the base branch
-- run: npm install -D causeval
+# After the source build steps above:
 - name: Behavioral contract diff
-  run: npx causeval diff "origin/${{ github.base_ref }}" HEAD
+  env:
+    BASE_REF: ${{ github.base_ref }}
+  run: node tools/causeval/packages/cli/dist/index.js diff "origin/$BASE_REF" HEAD
 ```
 
 ```text
@@ -141,3 +155,8 @@ percentage moving two points.
 Two-ref mode re-extracts the prompt at each commit, which costs a second
 extraction and mapping pass; both are cached. To compare stored reports instead,
 pass two JSON paths: `causeval diff base-report.json pr-report.json`.
+
+Two-ref mode uses the **current eval suite for both prompts**; compare separately
+saved base and PR reports to assess simultaneous eval-suite changes. Fixture
+analysis cannot discover newly written rules: configure a real provider for CI.
+The Action's default gate also fails on any flaky or indeterminate result.

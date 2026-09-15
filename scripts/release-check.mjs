@@ -3,14 +3,16 @@
  * drives every user journey against the installed binary. This is the check
  * that catches packaging mistakes the monorepo hides.
  */
-import { mkdir, readFile, writeFile, readdir } from "node:fs/promises";
+import { mkdtemp, readFile, writeFile, readdir } from "node:fs/promises";
+import { tmpdir } from "node:os";
 import { existsSync } from "node:fs";
 import { resolve, join } from "node:path";
 import { spawnSync } from "node:child_process";
 
 const root = process.cwd();
-const directory = resolve("output/package-smoke-" + Date.now());
-await mkdir(directory, { recursive: true });
+const directory = await mkdtemp(join(tmpdir(), "causeval-package-smoke-"));
+if (directory.startsWith(root + "/") || directory.startsWith(root + "\\"))
+  throw new Error("The package smoke project must be outside the repository.");
 const pnpm = process.env.npm_execpath;
 if (!pnpm) throw new Error("Run this with: pnpm release:check");
 
@@ -73,6 +75,11 @@ await writeFile(
   JSON.stringify({ name: "causeval-smoke", private: true, type: "module" }),
 );
 pnpmRun(["add", "./" + archive, "--ignore-workspace"]);
+check(
+  causeval(["--help"]).includes("verify"),
+  "Installed CLI help is missing.",
+);
+causeval(["--version"]);
 
 // 3. Journey A: a prompt with no eval suite.
 causeval(["init", "--dir", "prompt-only", "--prompt-only"]);
@@ -81,6 +88,10 @@ const promptOnlyConfig = [
   join(directory, "prompt-only/causeval.config.ts"),
 ];
 const scanEmpty = causeval(["scan", ...promptOnlyConfig]);
+check(
+  !scanEmpty.includes("only recognises"),
+  "Starter prompt emitted a false fixture warning.",
+);
 check(
   scanEmpty.includes("No eval suite detected") &&
     scanEmpty.includes("causeval generate"),
@@ -101,10 +112,20 @@ check(
   causeval(["scan", ...promptOnlyConfig]).includes("Trace Coverage"),
   "Accepted generated case did not become coverage.",
 );
+causeval(["review", ...promptOnlyConfig, "--accept", "all"]);
+check(
+  causeval(["verify", ...promptOnlyConfig], { expectFailure: true }).includes(
+    "Generated or custom evals need a real provider",
+  ),
+  "Generated eval verification must explain the fixture runner limitation before executing.",
+);
 
 // 4. Journey B and C: init, scan, verify against the bundled example.
 causeval(["init"]);
-causeval(["scan"]);
+check(
+  !causeval(["scan"]).includes("Warning:"),
+  "Fresh init + scan must not warn.",
+);
 causeval(["verify", "--strict", "--suggest", "--emit-outputs", "outputs.json"]);
 const report = JSON.parse(
   await readFile(join(directory, ".causeval/report.json"), "utf8"),
@@ -131,6 +152,7 @@ check(
   "--emit-outputs pointed at missing artifacts.",
 );
 causeval(["report"]);
+causeval(["diff", ".causeval/report.json", ".causeval/report.json"]);
 causeval(["badge", "--metric", "trace"]);
 causeval(["demo", "--dir", "demo-check", "--quiet"]);
 check(
@@ -198,7 +220,7 @@ check(
 );
 
 console.log(
-  `\nPacked package, declarations, all four user journeys and the GitHub Action passed.\n${directory}\n`,
+  `\nPacked package OUTSIDE the repository, declarations, fixture journeys, actionable generated-eval provider handoff, and local GitHub Action passed.\n${directory}\n`,
 );
 if (placeholders.length)
   throw new Error(

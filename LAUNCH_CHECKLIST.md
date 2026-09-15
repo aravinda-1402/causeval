@@ -1,0 +1,66 @@
+# Remaining launch actions
+
+Only actions that remain are listed here. Local verification evidence is in
+[docs/validation.md](docs/validation.md); finding-by-finding disposition is in
+[CAUSEVAL_AUDIT_RESOLUTION.md](CAUSEVAL_AUDIT_RESOLUTION.md).
+
+## Engineering / research
+
+- [ ] Run one budgeted live smoke test with your intended provider/model and
+      record extraction/mapping mistakes, counts and cost in `docs/validation.md`.
+      No provider credentials or local endpoint were available in this pass.
+      Use [the support project](examples/support-agent/README.md) after changing
+      its provider, or [the sandbox tool example](examples/tool-agent/README.md).
+      Keep the fixture disclaimer and do not publish quality claims from one run.
+
+## GitHub
+
+- [ ] Review and push the final changes, including the immutable audit and its
+      resolution; wait for the new commit's hosted CI. The latest pre-pass CI is green.
+- [ ] Upload `docs/images/social-preview.png` as repository social preview,
+      set the website URL after deployment, and confirm the private vulnerability
+      reporting contact path. Repository settings were not modified.
+
+Suggested topics, if useful: `llm-evaluation`, `system-prompts`, `ai-testing`,
+`behavioral-testing`, `mutation-testing`, `developer-tools`, `typescript`,
+`github-actions`. Current description is already accurate; no branding change
+is needed.
+
+## Package
+
+- [ ] Publish the reviewed **0.1.1** CLI from the prepared source:
+
+  ```bash
+  npm publish ./packages/cli --access public
+  npm view causeval@0.1.1 version
+  ```
+
+  Then test `npx --yes causeval@0.1.1 demo` in an empty directory. npm currently
+  returns E404. The CLI bundles core; a separate core publication is optional.
+  Only after successful publication, remove pending-publication notices and
+  promote npm quick-start instructions. Source-checkout instructions already
+  work and can remain.
+
+## Website
+
+- [ ] Set `NEXT_PUBLIC_SITE_URL` to the chosen HTTPS origin and deploy
+      `apps/web/out` using [the deployment guide](docs/deployment.md). Build with
+      `pnpm build` after setting that variable. Verify `/`, `/demo/`, `/docs/`,
+      `/report.html` and `/social-preview.png` on the public domain.
+
+## Release / Zenodo
+
+- [ ] Confirm the existing release's visibility in your GitHub account. Its
+      existence was supplied by you; the public API listed no visible releases.
+      The existing `v0` tag was verified and must not be moved or recreated.
+- [ ] If distributing these fixes through a GitHub release, publish a **new
+      0.1.1 patch** from the reviewed commit. Preserve all existing releases/tags.
+- [ ] If a DOI is desired, connect the repository to Zenodo and archive the
+      chosen stable release. CITATION.cff, author metadata, Apache-2.0 and version
+      are prepared. Add the real DOI to citation metadata/badge only after issuance.
+
+## Demo / LinkedIn
+
+- [ ] Record the [30-second demo](docs/launch-demo.md) with actual fixture
+      numbers and its visible limitation notice, then publish the launch post after
+      the public install and deployed-site checks pass.

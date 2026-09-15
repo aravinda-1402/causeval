@@ -76,6 +76,22 @@ export function redact(text: string, secrets: string[] = []): string {
     result = result.split(s).join("[REDACTED]");
   return (
     result
+      .replace(
+        /-----BEGIN (?:[A-Z]+ )*PRIVATE KEY-----[\s\S]*?(?:-----END (?:[A-Z]+ )*PRIVATE KEY-----|$)/g,
+        "[REDACTED]",
+      )
+      .replace(/\bBearer\s+[A-Za-z0-9._~+/-]+=*/gi, "Bearer [REDACTED]")
+      .replace(
+        /\beyJ[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\b/g,
+        "[REDACTED]",
+      )
+      .replace(/\b(?:AKIA|ASIA)[A-Z0-9]{16}\b/g, "[REDACTED]")
+      .replace(/\bxox[baprs]-[A-Za-z0-9-]+\b/g, "[REDACTED]")
+      .replace(/\bAIza[A-Za-z0-9_-]{20,}\b/g, "[REDACTED]")
+      .replace(
+        /(\b[a-z][a-z0-9+.-]*:\/\/)[^\s/@:]+:[^\s/@]+@/gi,
+        "$1[REDACTED]@",
+      )
       .replace(/\b(sk-[\w-]{8,}|gh[pousr]_[\w]{12,})\b/g, "[REDACTED]")
       // Matches shell (api_key=x), YAML (token: x) and JSON ("apiKey":"x")
       // shapes, so a serialized config embedded in a string is covered too.

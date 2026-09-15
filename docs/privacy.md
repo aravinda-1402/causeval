@@ -17,7 +17,8 @@ config file are never uploaded. There is no CausEval server: the CLI talks only
 to the provider `baseURL` you set.
 
 If data must stay local, use `provider.type: "ollama"` or `compatible` with a
-local endpoint. Everything works identically.
+local endpoint. The same workflow applies; model compatibility and analysis
+quality still need validation against your endpoint.
 
 ## Telemetry
 
@@ -51,7 +52,10 @@ Treat redaction as best effort, not as data-loss prevention.
 
 - `.causeval/report.json` and `report.html` contain your prompt text, eval
   inputs and model outputs.
-- `.causeval/cache/` contains raw analysis responses. It is gitignored, and
+- `.causeval/cache/` contains raw analysis responses. New `causeval init`
+  projects include `.causeval/.gitignore` to exclude artifacts in that directory;
+  existing ignore files are preserved. For projects created by older versions,
+  add `.causeval/` to your project's `.gitignore`. Check custom output paths too;
   cache files are written with restrictive permissions where the platform
   supports them.
 - `.causeval/generated-evals.yaml` contains model-drafted inputs derived from

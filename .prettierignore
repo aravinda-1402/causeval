@@ -1,4 +1,6 @@
 pnpm-lock.yaml
+# Preserve the independent audit byte for byte.
+CAUSEVAL_PRELAUNCH_AUDIT.md
 node_modules
 **/dist
 **/.next

@@ -49,7 +49,7 @@ For the current software version, you can also use:
   title = {CausEval: Causal Rule Coverage for AI Behavioral Contracts},
   year = {2026},
   howpublished = {\url{https://github.com/aravinda-1402/causeval}},
-  note = {Software, version 0.1.0}
+  note = {Software, version 0.1.1}
 }
 ```
 

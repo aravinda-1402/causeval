@@ -1,6 +1,7 @@
 import { test, expect } from "@playwright/test";
 import { mkdir } from "node:fs/promises";
 import data from "../../apps/web/lib/demo-data.json" with { type: "json" };
+import { ReportSchema, renderHTML } from "../../packages/core/src/index.js";
 
 const pseudoRuleId = data.rules.find(
   (rule) =>
@@ -44,4 +45,32 @@ test("capture and inspect responsive product surfaces", async ({
     fullPage: true,
   });
   expect(errors).toEqual([]);
+});
+
+test("standalone report contains long evidence and many eval columns without page overflow", async ({
+  page,
+}, testInfo) => {
+  const report = ReportSchema.parse(data);
+  report.evals = Array.from({ length: 500 }, (_, i) => ({
+    ...report.evals[0],
+    id: `eval-${i}`,
+  }));
+  report.rules[0].source.exactQuote = "Long source clause ".repeat(1000);
+  await page.setContent(renderHTML(report));
+  await expect(page.locator(".scroll")).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.locator(`[data-rule="${report.rules[0].id}"]`).first().click();
+  await expect(page.getByRole("dialog")).toBeVisible();
+  expect(
+    await page.evaluate(
+      () => document.documentElement.scrollWidth <= innerWidth,
+    ),
+  ).toBe(true);
+  await page.screenshot({
+    path: `output/playwright/report-stress-${testInfo.project.name}.png`,
+  });
 });

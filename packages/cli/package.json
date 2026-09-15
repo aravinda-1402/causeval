@@ -4,7 +4,7 @@
     "name": "Aravinda Raman Jatavallabha",
     "url": "https://github.com/aravinda-1402"
   },
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Behavioral contract coverage for AI prompts: find the rules your eval suite does not actually protect.",
   "keywords": [
     "llm",
@@ -30,7 +30,7 @@
   },
   "type": "module",
   "engines": {
-    "node": ">=20.11"
+    "node": ">=22"
   },
   "bin": {
     "causeval": "dist/index.js"

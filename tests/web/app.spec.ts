@@ -21,6 +21,21 @@ test("landing communicates the coverage gap and opens the demo", async ({
   await expect(page.getByRole("heading", { level: 1 })).toContainText(
     "Code has coverage.",
   );
+  await expect(
+    page.locator('a[href="https://github.com/aravinda-1402/causeval"]').first(),
+  ).toHaveText(/GitHub/);
+  await expect(page.locator(".start-code")).toContainText(
+    "npm publication is pending",
+  );
+  await expect(page.locator(".start-code")).not.toContainText("npx causeval");
+  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+    "content",
+    /social-preview\.png$/,
+  );
+  await expect(page.locator('meta[name="twitter:card"]')).toHaveAttribute(
+    "content",
+    "summary_large_image",
+  );
   // The hook is the contrast: everything passes, coverage is still partial.
   const terminal = page.locator(".terminal-content");
   await expect(terminal).toContainText("Eval pass rate (mapped)");

@@ -32,6 +32,11 @@ describe("user B and C: an existing eval suite, then causal verification", () =>
     expect(scan).toContain("Causal verification did not run");
     const scanned = await readJson(join(directory, ".causeval/report.json"));
     expect(scanned.summary.causalCoverage).toBeNull();
+    expect(scanned.warnings).toEqual([]);
+    expect(scan).not.toContain("Warning:");
+    expect(
+      await readFile(join(directory, ".causeval/.gitignore"), "utf8"),
+    ).toContain("*\n!.gitignore");
     expect(scanned.summary.maturity).toBe("prompt-and-evals");
 
     const verify = run(
@@ -131,6 +136,11 @@ describe("user A: a system prompt with no eval suite", () => {
     expect(afterAccept).toContain("Trace Coverage");
     expect(afterAccept).toContain("25%");
 
+    run("review", "--config", config, "--accept", "all");
+    expect(() => run("verify", "--config", config)).toThrow(
+      /Generated or custom evals need a real provider/,
+    );
+
     run("review", "--config", config, "--reject", "all");
     const afterReject = run("scan", "--config", config, "--no-cache");
     expect(afterReject).toContain("No eval suite detected");
@@ -213,5 +223,9 @@ describe("actionable failures", () => {
     );
     expect(output).toContain("only recognises the example prompt");
     expect(output).toContain("Set provider.type");
+    const reportPath = join(directory, ".causeval/report.json");
+    expect(run("diff", reportPath, reportPath)).toContain(
+      "results are incomplete",
+    );
   }, 180000);
 });

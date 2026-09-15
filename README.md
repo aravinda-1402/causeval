@@ -4,8 +4,8 @@
 
 Created by [Aravinda Raman Jatavallabha](https://github.com/aravinda-1402).
 
-CausEval investigates which behavioral rules your AI eval suite protects under
-the tested model and configuration.
+CausEval checks whether your LLM eval suite actually protects the behavioral
+rules in your system prompt, under the tested model and configuration.
 It extracts the behavioral contract from your system prompt, maps it to your
 existing evals, then removes one rule at a time and re-runs the evals that were
 supposed to cover it. If the tests still pass without the rule, the experiment
@@ -41,7 +41,7 @@ CLI results and opens locally in a browser.
 
 ```text
   Eval pass rate           100%     every mapped eval passes
-  Trace Coverage            75%     9 of 12 rules have a test that could catch a violation
+  Trace Coverage            75%     9 of 12 rules have a claimed direct eval mapping
   Causal Rule Coverage      42%     5 of 12 rules actually fail when the rule is removed
 
   4 behaviors look tested. Removing their instruction changed nothing.
@@ -71,7 +71,7 @@ of pretending it can. See [methodology](docs/methodology.md).
 
 ## Run it locally
 
-**Version 0.1 is currently unpublished on npm.** Use a source checkout to try it
+**npm publication is pending.** Use a source checkout to try it
 today. You need Git, Node.js 22+, and pnpm 10. If pnpm is unavailable, replace
 `pnpm` below with `npx --yes pnpm@10.17.1`.
 
@@ -258,7 +258,7 @@ Most applications have a system prompt long before they have tests. CausEval
 treats that as a first-class starting point:
 
 ```text
-$ npx causeval scan
+$ pnpm causeval scan --config my-agent/causeval.config.ts
 
   No eval suite detected.
 
@@ -421,6 +421,10 @@ Useful flags: `--config`, `--no-cache`, `--suggest`, `--runner`, `--runs`,
 
 ## Documentation
 
+Two focused examples: [support agent](examples/support-agent/README.md)
+(complete zero-key fixture) and [tool-using agent](examples/tool-agent/README.md)
+(your model, deterministic assertions over proposed tool calls).
+
 [Quick start](docs/quick-start.md) ·
 [Concepts](docs/concepts.md) ·
 [No evals yet](docs/no-evals.md) ·
@@ -492,3 +496,6 @@ credit solely for private use or running a hosted service. See
 ## License
 
 Apache-2.0. See [LICENSE](LICENSE).
+
+If CausEval helps you improve your LLM eval suite, consider starring the
+repository — it helps others discover the project.

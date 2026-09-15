@@ -46,6 +46,10 @@ export function renderBadge(
 const percent = (n: number | null) =>
   n === null ? "Not verified" : Math.round(n * 100) + "%";
 export function renderMarkdown(report: Report): string {
+  const text = (value: string) =>
+    e(value)
+      .replace(/[\r\n]+/g, " ")
+      .replace(/([\\`*_[\]|])/g, "\\$1");
   const s = report.summary;
   const lines = [
     "<!-- causeval-report -->",
@@ -82,8 +86,45 @@ export function renderMarkdown(report: Report): string {
       `${s.possibleRedundancies} rule(s) overlap with another rule; removal results for those carry a POSSIBLE REDUNDANCY confound.`,
       "",
     );
+  const risky = report.rules.filter(
+    (rule) =>
+      ["critical", "high"].includes(rule.severity) &&
+      (report.project.verified
+        ? !report.causalResults.some(
+            (r) =>
+              r.ruleId === rule.id && r.classification === "causally-covered",
+          )
+        : !report.mappings.some(
+            (m) =>
+              m.ruleId === rule.id &&
+              m.relationship === "direct" &&
+              m.confidence >= report.project.mappingConfidence,
+          )),
+  );
+  if (risky.length)
+    lines.push(
+      "### High-risk unprotected rules",
+      "",
+      ...risky
+        .slice(0, 10)
+        .map(
+          (rule) =>
+            `- **${text(rule.id)} [${rule.severity.toUpperCase()}]** ${text(rule.expectedBehavior)}`,
+        ),
+      ...(risky.length > 10
+        ? [`${risky.length - 10} more in the full report.`]
+        : []),
+      "",
+    );
+  if (report.warnings.length)
+    lines.push(
+      "### Analysis warnings",
+      "",
+      ...report.warnings.map((warning) => `- ${text(warning)}`),
+      "",
+    );
   lines.push(
-    `Provider ${report.run.provider}/${report.run.model} · ${report.run.runsPerEval} runs per eval · CausEval ${report.run.causevalVersion}`,
+    `Provider ${text(report.run.provider)}/${text(report.run.model)} · ${report.run.runsPerEval} runs per eval · CausEval ${text(report.run.causevalVersion)}`,
     "",
     report.project.fixture
       ? "Deterministic fixture evidence; not a model benchmark.\n"

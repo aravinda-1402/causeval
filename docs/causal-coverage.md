@@ -11,8 +11,10 @@ For each credibly mapped rule:
 5. Store every outcome, the per-eval breakdown, and the textual diff.
 
 Detection effect `D = baseline pass rate - mutant pass rate`. Defaults:
-`D >= 0.50` with a baseline at or above 0.80 is causally covered; `D <= 0.10`
-with a stable baseline is pseudo-covered; anything between is indeterminate; an
+`D >= 0.50` with a baseline at or above 0.80 is causally covered; `|D| <= 0.10`
+with a stable baseline is pseudo-covered. An inverted effect below `-0.10`
+is indeterminate and explicitly flagged; the positive band between 0.10 and
+0.50 is also indeterminate. An
 unstable baseline, aggregate or per eval, is flaky.
 
 ```text

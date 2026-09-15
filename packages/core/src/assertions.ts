@@ -1,3 +1,4 @@
+import { Script } from "node:vm";
 import type { EvalCase, JsonShape } from "./schemas.js";
 
 export interface AssertionResult {
@@ -6,10 +7,22 @@ export interface AssertionResult {
 }
 type Expectation = EvalCase["expected"];
 
-/** Patterns come from the developer's own eval files, which are trusted input,
- * but the tested string is still bounded so a pathological pattern cannot hang
- * a verification run indefinitely. */
-const MAX_MATCH_LENGTH = 200_000;
+/** Only this fixed program is executed; patterns and output are data, never
+ * JavaScript source. V8's execution deadline interrupts regex backtracking.
+ * This is a time bound, not a sandbox for executing user code. */
+const regexAssertions = new Script(`
+  const failures = [];
+  for (const [patterns, shouldMatch] of groups) {
+    for (const pattern of patterns) {
+      let regex;
+      try { regex = new RegExp(pattern); }
+      catch { failures.push('invalid regular expression: ' + pattern); continue; }
+      if (regex.test(subject) !== shouldMatch)
+        failures.push((shouldMatch ? 'mustMatch: ' : 'mustNotMatch: ') + pattern);
+    }
+  }
+  failures;
+`);
 
 function typeOf(value: unknown): string {
   if (value === null) return "null";
@@ -80,30 +93,32 @@ export function checkAssertions(
   expected: Expectation,
 ): AssertionResult {
   const failures: string[] = [];
-  const subject = output.slice(0, MAX_MATCH_LENGTH);
   for (const needle of expected.mustContain ?? [])
     if (!output.includes(needle))
       failures.push(`mustContain: missing ${JSON.stringify(needle)}`);
   for (const needle of expected.mustNotContain ?? [])
     if (output.includes(needle))
       failures.push(`mustNotContain: found ${JSON.stringify(needle)}`);
-  for (const [patterns, shouldMatch] of [
-    [expected.mustMatch ?? [], true],
-    [expected.mustNotMatch ?? [], false],
-  ] as const) {
-    for (const pattern of patterns) {
-      let regex: RegExp;
-      try {
-        regex = new RegExp(pattern);
-      } catch {
-        failures.push(`invalid regular expression: ${pattern}`);
-        continue;
-      }
-      const matched = regex.test(subject);
-      if (matched !== shouldMatch)
-        failures.push(
-          `${shouldMatch ? "mustMatch" : "mustNotMatch"}: ${pattern}`,
-        );
+  if (expected.mustMatch?.length || expected.mustNotMatch?.length) {
+    try {
+      failures.push(
+        ...(regexAssertions.runInNewContext(
+          {
+            subject: output,
+            groups: [
+              [expected.mustMatch ?? [], true],
+              [expected.mustNotMatch ?? [], false],
+            ],
+          },
+          { timeout: 1000 },
+        ) as string[]),
+      );
+    } catch {
+      // An evaluator timeout is not a behavioral failure: the engine must
+      // classify the experiment as indeterminate, not count causal protection.
+      throw new Error(
+        "regular expression evaluation exceeded 1000ms or could not complete. Simplify mustMatch/mustNotMatch, or use literal assertions.",
+      );
     }
   }
   if (expected.json || expected.jsonSchema) {

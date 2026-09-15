@@ -16,6 +16,9 @@ import { Header } from "@/components/header";
 import { Brand } from "@/components/brand";
 import { Button } from "@/components/ui/button";
 import data from "@/lib/demo-data.json";
+export const metadata = process.env.NEXT_PUBLIC_SITE_URL
+  ? { alternates: { canonical: process.env.NEXT_PUBLIC_SITE_URL } }
+  : {};
 
 export default function Home() {
   const s = data.summary;
@@ -35,7 +38,7 @@ export default function Home() {
           <div className="hero-grid"></div>
           <div className="hero-copy">
             <div className="eyebrow">
-              <span className="pulse-dot" /> CAUSAL RULE COVERAGE{" "}
+              <span className="pulse-dot" /> CONTRACT · TRACE · VERIFY{" "}
               <span className="version-pill">v0.1</span>
             </div>
             <h1>
@@ -46,9 +49,9 @@ export default function Home() {
               <span>should too.</span>
             </h1>
             <p className="hero-description">
-              Your evals can pass while critical behaviors go untested.
-              <br className="desktop-break" /> Find the rules your AI eval suite
-              doesn’t actually protect.
+              Your system prompt contains rules. Your evals should protect them.
+              Map those rules to your tests, then check whether the tests notice
+              when a rule disappears.
             </p>
             <div className="hero-actions">
               <Button asChild>
@@ -168,8 +171,7 @@ export default function Home() {
               >
                 <TriangleAlert size={17} />
                 <span>
-                  {s.pseudoCovered} behaviors look tested. They aren’t
-                  protected.
+                  {s.pseudoCovered} mapped rules: removal went undetected.
                 </span>
                 <ArrowUpRight size={16} />
               </Link>
@@ -193,7 +195,7 @@ export default function Home() {
               <GitBranch size={17} /> GitHub Actions
             </span>
             <span>
-              <ShieldCheck size={17} /> Local model compatible
+              <ShieldCheck size={17} /> Your provider credentials
             </span>
           </div>
         </div>
@@ -211,9 +213,9 @@ export default function Home() {
               </h2>
             </div>
             <p>
-              Semantic similarity is a starting point.
+              A mapping makes a testable claim.
               <br />
-              Removing a rule tells you whether
+              Remove the rule and check whether
               <br />
               your evals actually depend on it.
             </p>
@@ -334,14 +336,15 @@ export default function Home() {
             </div>
             <div className="start-code">
               <span className="code-label">
-                <Terminal size={14} /> NO SETUP, NO API KEY
+                <Terminal size={14} /> SOURCE CHECKOUT · NO API KEY
               </span>
               <pre>
-                <span># See the whole idea in 30 seconds</span>
-                {"\n"}npx causeval demo{"\n\n"}
-                <span># Then point it at your own prompt</span>
-                {"\n"}npm install -D causeval{"\n"}npx causeval init{"\n"}npx
-                causeval scan
+                <span># npm publication is pending. Use source today.</span>
+                {"\n"}git clone https://github.com/aravinda-1402/causeval.git
+                {"\n"}cd causeval
+                {"\n"}npx --yes pnpm@10.17.1 install --frozen-lockfile
+                {"\n"}npx --yes pnpm@10.17.1 build
+                {"\n"}npx --yes pnpm@10.17.1 causeval demo
               </pre>
               <div>
                 <CheckCircle2 size={14} /> {s.totalRules} rules.{" "}
@@ -355,9 +358,9 @@ export default function Home() {
       <footer className="site-footer page-width">
         <Brand />
         <span>Testing evidence. Never a safety certification.</span>
-        <Link href="/docs">
-          Documentation <ArrowUpRight size={13} />
-        </Link>
+        <a href="https://github.com/aravinda-1402/causeval">
+          View on GitHub <ArrowUpRight size={13} />
+        </a>
       </footer>
     </>
   );

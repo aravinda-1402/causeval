@@ -11,6 +11,52 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 afterEach(() => vi.unstubAllGlobals());
 describe("provider protocol", () => {
+  it("invalidates analysis caches for inputs, provider, model, namespace and relevant settings; no-cache bypasses storage", async () => {
+    const dir = await mkdtemp(join(tmpdir(), "causeval-cache-variants-"));
+    const generateStructured = vi.fn().mockResolvedValue({ value: 1 });
+    const schema = z.object({ value: z.number() });
+    const request = { system: "extract", input: "prompt + eval" };
+    const base = {
+      name: "compatible",
+      model: "m1",
+      temperature: 0,
+      seed: 1,
+      generateStructured,
+      generateText: vi.fn(),
+    };
+    try {
+      const cached = new CachedProvider(base, dir, "endpoint-a");
+      await cached.generateStructured(request, schema);
+      await cached.generateStructured(request, schema);
+      expect(generateStructured).toHaveBeenCalledTimes(1);
+      for (const variant of [
+        { ...request, input: "changed prompt + eval" },
+        { ...request, input: "prompt + changed eval" },
+        { ...request, temperature: 0.2 },
+      ])
+        await cached.generateStructured(variant, schema);
+      for (const variant of [
+        { ...base, name: "openai" },
+        { ...base, model: "m2" },
+        { ...base, seed: 2 },
+      ])
+        await new CachedProvider(variant, dir, "endpoint-a").generateStructured(
+          request,
+          schema,
+        );
+      await new CachedProvider(base, dir, "endpoint-b").generateStructured(
+        request,
+        schema,
+      );
+      expect(generateStructured).toHaveBeenCalledTimes(8);
+      const uncached = new CachedProvider(base, dir, "endpoint-a", false);
+      await uncached.generateStructured(request, schema);
+      await uncached.generateStructured(request, schema);
+      expect(generateStructured).toHaveBeenCalledTimes(10);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
+  });
   it("sends configured OpenAI-compatible models and validates JSON", async () => {
     const mock = vi.fn().mockResolvedValue(
       new Response(

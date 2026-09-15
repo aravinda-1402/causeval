@@ -10,9 +10,9 @@ export function Header() {
         <nav aria-label="Main navigation">
           <Link href="/demo">Interactive demo</Link>
           <Link href="/docs">Documentation</Link>
-          <Link href="/docs#github-action">
-            GitHub Action <ArrowUpRight size={13} />
-          </Link>
+          <a href="https://github.com/aravinda-1402/causeval">
+            GitHub <ArrowUpRight size={13} />
+          </a>
         </nav>
         <div className="nav-actions">
           <ThemeToggle />

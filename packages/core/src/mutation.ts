@@ -58,9 +58,12 @@ export function mutatePrompt(
       const lines = prompt.split("\n");
       const prefix = lines.slice(0, span.lineStart - 1).join("\n");
       const section = lines.slice(span.lineStart - 1, span.lineEnd).join("\n");
-      const at =
-        (span.lineStart > 1 ? prefix.length + 1 : 0) +
-        section.indexOf(span.exactQuote);
+      const relative = section.indexOf(span.exactQuote);
+      if (relative < 0 || section.indexOf(span.exactQuote, relative + 1) >= 0)
+        throw new Error(
+          `Mutation refused: ambiguous or missing source for unrelated rule ${other.id}. Refine its source span before verifying.`,
+        );
+      const at = (span.lineStart > 1 ? prefix.length + 1 : 0) + relative;
       if (
         edits.some((e) => e.start < at + span.exactQuote.length && e.end > at)
       )

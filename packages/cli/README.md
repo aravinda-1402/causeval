@@ -5,8 +5,13 @@
 CausEval finds the behavioral rules your AI eval suite doesn't actually protect.
 It extracts the behavioral contract from your system prompt, maps it to your
 existing evals, then removes one rule at a time and re-runs the evals that were
-supposed to cover it. If the tests still pass without the rule, they were never
-protecting it.
+supposed to cover it. If the tests still pass without the rule, those runs found
+no evidence that the tests depend on that instruction.
+
+**Contract · Trace · Verify.** CausEval is free and open source; real analysis
+uses your own provider credentials. For an unpublished checkout, use the
+[source quick start](https://github.com/aravinda-1402/causeval#run-it-locally)
+instead. The commands below require a published npm version or an installed tarball.
 
 ```bash
 npx causeval demo      # the whole idea in 30 seconds, no API key
@@ -33,14 +38,15 @@ export default {
 };
 ```
 
-Providers: OpenAI, Anthropic, any OpenAI-compatible endpoint, and Ollama. No
-model name is hard-coded.
+Provider adapters: OpenAI, Anthropic, OpenAI-compatible endpoints, and Ollama.
+Wire protocols have mocked tests; live model quality and endpoint compatibility
+must be checked for your chosen model. No model name is hard-coded.
 
 ## What you get
 
 ```text
   Eval pass rate           100%     every mapped eval passes
-  Trace Coverage            75%     9 of 12 rules have a test that could catch a violation
+  Trace Coverage            75%     9 of 12 rules have a claimed direct eval mapping
   Causal Rule Coverage      42%     5 of 12 rules actually fail when the rule is removed
 
   4 behaviors look tested. Removing their instruction changed nothing.
@@ -74,7 +80,9 @@ npx causeval review --accept all
 ```
 
 Generated cases are marked `GENERATED — UNREVIEWED` and are excluded from every
-coverage metric until you accept them.
+coverage metric until you review and accept them. Generated/custom evals need
+your own provider or runner for verification; the fixture executes bundled evals
+only. Use `--accept all` only after reviewing every candidate.
 
 ## Commands
 

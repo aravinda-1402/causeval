@@ -1,9 +1,15 @@
 # Quick start
 
-## 60 seconds, no API key
+## First demo, no API key
+
+**npm publication is pending.** Use Git and Node.js 22+ to run from source:
 
 ```bash
-npx causeval demo
+git clone https://github.com/aravinda-1402/causeval.git
+cd causeval
+npx --yes pnpm@10.17.1 install --frozen-lockfile
+npx --yes pnpm@10.17.1 build
+npx --yes pnpm@10.17.1 causeval demo
 ```
 
 Runs the bundled support-agent example end to end against a deterministic
@@ -13,14 +19,16 @@ editable copy of the demo project and a full HTML report.
 
 ## Your own project
 
+The remaining commands run from the checkout. If pnpm is not installed, replace
+`pnpm` with `npx --yes pnpm@10.17.1`.
+
 ```bash
-npm install -D causeval
-npx causeval init
+pnpm causeval init --dir my-agent
 ```
 
 `init` writes `causeval.config.ts`, `prompts/system.md` and `evals/example.yaml`,
 all pointed at the fixture provider so `scan` and `verify` work immediately. Use
-`npx causeval init --prompt-only` if you want to start from a prompt with no eval
+`pnpm causeval init --dir my-agent --prompt-only` if you want to start from a prompt with no eval
 suite.
 
 Replace the prompt and evals with your own, then point the config at your model:
@@ -37,8 +45,8 @@ Set `CAUSEVAL_MODEL` and `OPENAI_API_KEY` (or `ANTHROPIC_API_KEY`) in your
 shell, then:
 
 ```bash
-npx causeval scan      # behavioral contract + Trace Coverage. No evals executed.
-npx causeval verify    # removes each rule, re-runs its evals, reports CRC.
+pnpm causeval scan --config my-agent/causeval.config.ts
+pnpm causeval verify --config my-agent/causeval.config.ts
 ```
 
 `scan` is cheap: it makes a small number of cached analysis calls and never
@@ -50,14 +58,16 @@ calls, so run it deliberately.
 That is a supported starting point, not an error:
 
 ```bash
-npx causeval scan       # shows the contract and its severity breakdown
-npx causeval generate   # drafts candidate cases for the missing dimensions
-npx causeval review --list
-npx causeval review --accept all
+pnpm causeval scan --config my-agent/causeval.config.ts
+pnpm causeval generate --config my-agent/causeval.config.ts
+pnpm causeval review --config my-agent/causeval.config.ts --list
+pnpm causeval review --config my-agent/causeval.config.ts --accept r05-boundary
 ```
 
 Generated cases are marked `GENERATED - UNREVIEWED` and are excluded from every
-coverage metric until you accept them. See [Starting with no
+coverage metric until you review and accept them. The last command is an example
+candidate ID; use an ID from your list. Generated/custom eval execution requires
+your provider or runner, while the fixture executes only bundled evals. See [Starting with no
 evals](no-evals.md).
 
 ## Working in this repository

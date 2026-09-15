@@ -22,6 +22,11 @@ CAUSAL RULE COVERAGE                  causeval verify
 
 ## 1. Scan a prompt with no evals
 
+An eval is a test input plus an expected response or action. You do not need any
+to extract a contract. First follow the [source quick start](quick-start.md),
+use `init --prompt-only`, and configure your own provider before replacing the
+example prompt. The bundled fixture recognises only the example.
+
 ```bash
 causeval scan
 ```
@@ -119,6 +124,12 @@ This holds even if you point `config.evals` directly at the staging file: the
 exclusion is in the engine, not in the glob.
 
 ## 4. Then the normal flow
+
+**Generated eval execution needs a real provider or your custom runner.** The
+zero-key fixture can demonstrate extraction, generation and review, but can only
+execute its bundled evals. Configure [your provider](providers.md) and model,
+or use [a custom runner](custom-runner.md), before verifying accepted candidates.
+`causeval demo` remains the complete zero-key verification walkthrough.
 
 ```bash
 causeval scan     # Trace Coverage over the reviewed suite

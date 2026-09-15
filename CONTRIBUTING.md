@@ -75,6 +75,9 @@ changes.
   harness.
 - **`false positive`** — a rule extracted, mapped or classified wrongly. Include
   a minimal anonymised prompt and eval so it can become a fixture.
+- **`false negative`** — a missed rule, credible mapping or detected regression.
+  Use the same wrong-result template and explain the expected evidence.
+- **`documentation`** — first-run clarity, examples and accessibility.
 - **`research`** — methodology, thresholds, redundancy detection, confidence
   handling, study design.
 
@@ -86,3 +89,9 @@ it, the relevant slice of `report.json` (`rules`, `mappings`, or the
 private prompt content, account identifiers and secrets first.
 
 By contributing you agree your contributions are licensed under Apache-2.0.
+
+## Community showcase
+
+Using CausEval in a public project? Open a use-case issue or a PR linking to your
+integration and the version used. Include only results you can substantiate and
+have permission to share. No external users or adopters are claimed here yet.

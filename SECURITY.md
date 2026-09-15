@@ -18,7 +18,11 @@ provider endpoint you configured, and writes files under `.causeval/`.
 - A `--runner` command is executed locally, in a shell, with your environment.
   It runs only when you pass the flag: CausEval never discovers or executes
   anything found in a repository under analysis.
-- Eval files, including regular expressions, are your own input.
+- Review eval files before accepting them, including model-generated cases.
+  Regular expressions are data: a fixed evaluator runs all patterns for one
+  output under a 1000 ms V8 execution deadline. A timeout aborts evaluation and
+  becomes an indeterminate experiment, never causal protection. Literal and
+  regex assertions inspect the full output without silent truncation.
 
 **Untrusted by design** — never allowed to act as instructions:
 

@@ -46,7 +46,7 @@ nothing. If it is taken, change `name` in `packages/cli/package.json`, keep
 
 ```bash
 pnpm --filter causeval pack --pack-destination /tmp
-tar -tzf /tmp/causeval-0.1.0.tgz
+tar -tzf /tmp/causeval-0.1.1.tgz
 ```
 
 It should contain `dist/`, `LICENSE`, `NOTICE`, `README.md` and `package.json`
@@ -54,6 +54,20 @@ and nothing else. The CLI bundles core, so it has no unpublished runtime
 dependency.
 
 ## 5. Publish
+
+The final completion pass prepares **0.1.1** locally. It does not publish npm,
+create a release, or move the existing `v0` Action tag. Preserve the existing
+release and its tag. See [remaining launch actions](../LAUNCH_CHECKLIST.md).
+
+After the quality gate, account approval and a final tarball review:
+
+```bash
+npm publish ./packages/cli --access public
+```
+
+The CLI bundles core; publishing `@causeval/core` is not required to install it.
+If publishing the library separately, `npm publish ./packages/core --access public`
+is a separate maintainer decision. Do not run either command automatically.
 
 Publish only with the owner's explicit authorisation. Tag the GitHub Action only
 after its workflow has been exercised on GitHub, not just locally. Do not

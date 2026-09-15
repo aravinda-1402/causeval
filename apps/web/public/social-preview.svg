@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630">
+  <rect width="1200" height="630" fill="#0c1015"/>
+  <path d="M0 626h1200" stroke="#8ee6bc" stroke-width="8"/>
+  <g transform="translate(74 66) scale(1.55)">
+    <path d="M27 10a13 13 0 1 0 0 20" stroke="#edf2f7" stroke-width="3" fill="none"/>
+    <path d="m21 14 6 6-6 6m-8-6h13" stroke="#8ee6bc" stroke-width="3" fill="none"/>
+  </g>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="146" y="113" fill="#edf2f7" font-size="40" font-weight="700">CausEval</text>
+    <text x="74" y="254" fill="#edf2f7" font-size="68" font-weight="700" letter-spacing="-2">Code has coverage.</text>
+    <text x="74" y="340" fill="#8ee6bc" font-size="68" font-weight="700" letter-spacing="-2">Your prompts should too.</text>
+    <text x="78" y="426" fill="#acb6c4" font-size="28">Do your LLM evals protect the rules in your system prompt?</text>
+    <text x="78" y="540" fill="#edf2f7" font-size="27" letter-spacing="3">CONTRACT  ·  TRACE  ·  VERIFY</text>
+    <text x="1124" y="540" text-anchor="end" fill="#acb6c4" font-size="21">Free + open source</text>
+  </g>
+</svg>

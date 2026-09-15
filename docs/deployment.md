@@ -24,6 +24,12 @@ routes need an `index.html` fallback within each route.
 `scripts/serve-static.mjs` is a local production-preview helper, not a hardened
 public server.
 
-No live deployment has been performed from this repository. Configuration
+Set `NEXT_PUBLIC_SITE_URL` to the final HTTPS site origin before building to
+emit the homepage canonical URL and social image URLs on that domain. Without
+it, no canonical is invented and social metadata uses the repository's raw PNG.
+Verify `/social-preview.png` returns an image after deployment. The same PNG at
+`docs/images/social-preview.png` can be uploaded as the GitHub social preview.
+
+Deployment status has not been verified in this final pass. Configuration
 follows the [Next.js static export
 documentation](https://nextjs.org/docs/app/guides/static-exports).

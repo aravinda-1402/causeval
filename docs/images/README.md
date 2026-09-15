@@ -14,3 +14,8 @@ the routes above at `http://127.0.0.1:3000`. Capture with Playwright into
 `output/playwright/`, inspect the images, then copy the selected captures here.
 If the fixture changes, run `pnpm demo:generate` before building and update the
 README captions to match the new results.
+
+`social-preview.png` is a 1200 × 630 card using the existing logo, colors and
+tagline. Regenerate with `node scripts/generate-social.mjs` after installing
+Playwright Chromium. Its editable source is
+`apps/web/public/social-preview.svg`; the PNG is also served by the website.

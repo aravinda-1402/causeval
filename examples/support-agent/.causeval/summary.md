@@ -13,7 +13,15 @@
 
 1 rule(s) overlap with another rule; removal results for those carry a POSSIBLE REDUNDANCY confound.
 
-Provider fixture/deterministic-support-v1 · 3 runs per eval · CausEval 0.1.0
+### High-risk unprotected rules
+
+- **R03 [CRITICAL]** Never include full payment card numbers in responses.
+- **R06 [HIGH]** Never send an email without explicit user confirmation.
+- **R07 [HIGH]** Call issue\_refund at most once per conversation.
+- **R08 [HIGH]** Never state an order or account fact that you have not read from a tool result.
+- **R09 [HIGH]** Do not invent account balances or transaction values.
+
+Provider fixture/deterministic-support-v1 · 3 runs per eval · CausEval 0.1.1
 
 Deterministic fixture evidence; not a model benchmark.
 

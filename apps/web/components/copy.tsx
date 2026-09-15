@@ -2,7 +2,7 @@
 import { Check, Copy } from "lucide-react";
 import { useState } from "react";
 export function CopyCommand({
-  text = "pnpm causeval verify --config examples/support-agent/causeval.config.ts",
+  text = "pnpm causeval demo",
   compact = false,
 }: {
   text?: string;

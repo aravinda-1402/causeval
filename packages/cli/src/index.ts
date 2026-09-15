@@ -152,7 +152,12 @@ function makeJudge(
   return new CachedProvider(
     inner,
     resolve(cwd, ".causeval/cache"),
-    "judge:" + hash({ type: config.judge.type, model: config.judge.model }),
+    "judge:" +
+      hash({
+        type: config.judge.type,
+        model: config.judge.model,
+        baseURL: config.judge.baseURL ?? process.env.CAUSEVAL_BASE_URL ?? "",
+      }),
     cache,
   );
 }
@@ -394,7 +399,9 @@ async function run(mode: "scan" | "verify", options: RunOptions) {
     print(safe);
     const usage = llm.usage;
     const judgeUsage = judge === llm ? null : judge.usage;
-    const requests = usage.requests + (judgeUsage?.requests ?? 0);
+    // A default scoped judge shares the provider's underlying request counter.
+    const requests =
+      usage.requests + (config.judge ? (judgeUsage?.requests ?? 0) : 0);
     console.log(
       `\n  Provider requests: ${requests}` +
         (usage.cacheHits + (judgeUsage?.cacheHits ?? 0)
@@ -486,6 +493,13 @@ async function initProject(directory: string, promptOnly: boolean) {
     ["causeval.config.ts", INIT_CONFIG],
     ["prompts/system.md", fixturePrompt + "\n"],
   ];
+  // Keep private artifacts out of a new user's Git history without replacing
+  // any existing ignore policy.
+  if (!(await exists(resolve(cwd, ".causeval/.gitignore"))))
+    files.push([
+      ".causeval/.gitignore",
+      "# Prompt-derived cache, reports and generated candidates may be private.\n*\n!.gitignore\n",
+    ]);
   if (!promptOnly)
     files.push([
       "evals/example.yaml",
@@ -510,8 +524,9 @@ async function initProject(directory: string, promptOnly: boolean) {
         ? `    1. causeval scan${where}        see the behavioral contract (no eval suite yet)\n    2. causeval generate${where}    draft a starter eval suite\n    3. causeval review${where} --list  accept, edit or reject each case`
         : `    1. causeval scan${where}      map the contract to the bundled evals\n    2. causeval verify${where}    remove each rule and re-run the mapped evals`,
       "",
-      "  Both work without an API key: the starter config uses the bundled",
-      "  deterministic fixture. Point provider at your own model when ready.",
+      "  The starter config uses a deterministic fixture and needs no API key.",
+      "  For your own prompt or generated eval execution, configure your provider",
+      "  and model (docs/providers.md), or pass --runner to your eval pipeline.",
       "",
     ].join("\n"),
   );
@@ -764,6 +779,14 @@ async function runDemo(options: { dir?: string; quiet?: boolean }) {
 }
 
 function printDiff(before: Report, after: Report) {
+  if (before.warnings.length) {
+    console.log("  Base analysis warnings:");
+    printWarnings(before);
+  }
+  if (after.warnings.length) {
+    console.log("  Current analysis warnings:");
+    printWarnings(after);
+  }
   const d = diffReports(before, after);
   const pct = (n: number) =>
     `${n >= 0 ? "+" : ""}${Math.round(n * 1000) / 10}%`;
@@ -822,7 +845,7 @@ function addRunOptions(command: Command) {
     .option("--fail-on <policy>", "threshold or never", "never")
     .option("--quiet", "Suppress output")
     .option("--verbose", "Detailed progress and cache hits")
-    .option("--debug", "Diagnostic progress without secrets");
+    .option("--debug", "Alias for --verbose; no secret dumps");
 }
 
 export function createProgram() {
@@ -1015,11 +1038,18 @@ async function loadDiffReports(
   const reports: Report[] = [];
   for (const ref of [before, after]) {
     if (ref.startsWith("-") || !ref.trim()) throw new Error("Invalid Git ref.");
-    const commit = execFileSync(
-      "git",
-      ["rev-parse", "--verify", "--end-of-options", ref + "^{commit}"],
-      { cwd, encoding: "utf8" },
-    ).trim();
+    let commit: string;
+    try {
+      commit = execFileSync(
+        "git",
+        ["rev-parse", "--verify", "--end-of-options", ref + "^{commit}"],
+        { cwd, encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] },
+      ).trim();
+    } catch {
+      throw new Error(
+        `Cannot resolve Git ref ${ref}. Fetch the base branch (fetch-depth: 0 in CI), check the ref with git log, or compare two saved report JSON files.`,
+      );
+    }
     const prompt = execFileSync("git", ["show", `${commit}:${promptPath}`], {
       cwd,
       encoding: "utf8",
@@ -1036,7 +1066,11 @@ async function loadDiffReports(
       }),
     );
   }
-  return [reports[0], reports[1]];
+  return reports.map((report) =>
+    ReportSchema.parse(
+      JSON.parse(serializeReport(report, secretValues(config))),
+    ),
+  ) as [Report, Report];
 }
 if (
   process.argv[1] &&

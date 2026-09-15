@@ -3,7 +3,7 @@
  * website, the example project and the README always show the same numbers the
  * engine actually produces. Run with `pnpm demo:generate`.
  */
-import { mkdir, writeFile } from "node:fs/promises";
+import { mkdir, readFile, writeFile } from "node:fs/promises";
 import { dirname } from "node:path";
 import { stringify } from "yaml";
 import {
@@ -32,7 +32,7 @@ const config = ConfigSchema.parse({
 });
 const provider = new FixtureProvider();
 const report = await analyze({
-  prompt: fixturePrompt,
+  prompt: await readFile("examples/support-agent/prompts/system.md", "utf8"),
   evals: fixtureEvals,
   provider,
   runner: new FixtureRunner(),

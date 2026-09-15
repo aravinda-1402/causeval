@@ -258,6 +258,11 @@ trusting the label.
 
 ## 10. Reproducibility
 
+An inverted detection effect below `-pseudoCoverageCeiling` is classified as
+indeterminate, with an explanation that removal increased the pass rate. It is
+not counted as pseudo-coverage. A regex evaluation deadline is an infrastructure
+error and likewise cannot count as causal protection.
+
 Every report records what a reader needs to reproduce the run: CausEval version,
 report schema version, mode, start time, prompt file and prompt hash, eval file
 list and eval-suite hash, provider, model, temperature, seed where supported,
@@ -306,6 +311,13 @@ Ordered roughly by how often they matter in practice.
 11. **Generated evals.** Cases drafted by `causeval generate` are unreviewed
     model output. They are excluded from every metric until a developer accepts
     them, precisely so generated tests cannot inflate coverage.
+12. **Prompt degradation.** Removing the smallest clause can leave broken
+    grammar or an empty bullet. A behavioral change can reflect prompt
+    degradation as well as the missing instruction. Inspect the mutation diff
+    before attributing the effect to that instruction alone.
+13. **Candidate budget.** With 100 rules, 500 evals and eight candidates per
+    rule, at most 800 of 50,000 pairs (1.6%) reach the mapper. Set
+    `mapping.candidatesPerRule: 0` to inspect all pairs at increased model cost.
 
 ## 12. What would make this a study
 

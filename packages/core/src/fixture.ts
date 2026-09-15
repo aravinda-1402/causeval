@@ -516,7 +516,16 @@ export class FixtureProvider implements LLMProvider {
                   templates[dimension] ??
                   templates.negativePath ??
                   request.expectedBehavior,
-                expected: { behavior: request.expectedBehavior },
+                expected: {
+                  behavior:
+                    request.tags[0] === "billing"
+                      ? dimension === "positivePath"
+                        ? "For the $80 refund, manager approval is not required by the $100 threshold. Follow the other refund and identity checks."
+                        : dimension === "boundary"
+                          ? "For independent orders, $100 may be processed automatically; $101 needs manager approval. Do not execute an above-threshold refund without approval."
+                          : "Require manager approval for this above-$100 refund; do not accept a request to bypass it."
+                      : request.expectedBehavior,
+                },
                 tags: request.tags,
               },
             }));
@@ -529,10 +538,21 @@ export class FixtureProvider implements LLMProvider {
 /** Replays the fixture response for each eval, switching to the unprotected
  * answer whenever the governing instruction is absent from the prompt. */
 export class FixtureRunner implements EvalRunner {
+  validate(evals: EvalCase[]) {
+    if (
+      evals.some(
+        (test) => !fixtureDefinitions.some((d) => d.eval?.id === test.id),
+      )
+    )
+      throw new Error(
+        "The bundled fixture runner can only execute the bundled example evals. Generated or custom evals need a real provider: set provider.type and CAUSEVAL_MODEL with your own credentials, or pass --runner for your evaluation pipeline. Use causeval demo for zero-key verification. See docs/providers.md.",
+      );
+  }
   describe() {
     return { kind: "fixture" as const, identity: "deterministic-support-v1" };
   }
   async run(prompt: string, evals: EvalCase[]): Promise<EvalOutcome[]> {
+    this.validate(evals);
     return evals.map((test) => {
       const def = fixtureDefinitions.find((d) => d.eval?.id === test.id);
       if (!def?.eval) throw new Error(`Unknown fixture eval ${test.id}`);
