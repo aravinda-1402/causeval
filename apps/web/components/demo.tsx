@@ -1,13 +1,11 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import * as Dialog from "@radix-ui/react-dialog";
 import {
   ArrowDown,
   ArrowDownToLine,
-  ArrowLeft,
   ArrowRight,
-  BookOpen,
   Check,
   ChevronRight,
   CircleCheck,
@@ -15,36 +13,47 @@ import {
   FileCode2,
   GitBranch,
   Grid2X2,
-  LayoutDashboard,
+  List,
   Search,
   ShieldCheck,
   SlidersHorizontal,
   Sparkles,
-  Terminal,
   TriangleAlert,
   X,
 } from "lucide-react";
-import { Brand } from "./brand";
-import { ThemeToggle } from "./theme";
+import { Header } from "./header";
 import { Button } from "./ui/button";
 import data from "@/lib/demo-data.json";
-
 type Rule = (typeof data.rules)[number];
 const labels: Record<string, string> = {
-  "causally-covered": "Causally covered",
-  "pseudo-covered": "Pseudo-covered",
-  uncovered: "Uncovered",
-  flaky: "Flaky",
-  indeterminate: "Indeterminate",
+  "causally-covered": "Removal detected",
+  "pseudo-covered": "Removal missed",
+  uncovered: "No test linked",
+  flaky: "Inconsistent results",
+  indeterminate: "Not enough evidence",
 };
-const tabs = [
-  { name: "Overview", icon: LayoutDashboard },
-  { name: "Coverage Matrix", icon: Grid2X2 },
-  { name: "Uncovered", icon: CircleDashed },
-  { name: "Pseudo-Covered", icon: TriangleAlert },
-  { name: "Causally Covered", icon: ShieldCheck },
-  { name: "Behavioral Contract", icon: FileCode2 },
-];
+const meaning: Record<string, string> = {
+  "causally-covered":
+    "The tests reliably noticed when this instruction was removed.",
+  "pseudo-covered":
+    "The tests still passed after this instruction was removed.",
+  uncovered: "No existing test is confidently linked to this rule.",
+  flaky:
+    "The original tests did not pass consistently, so this result needs review.",
+  indeterminate:
+    "The experiment did not produce a clear result. Review the evidence before drawing a conclusion.",
+};
+const nextStep: Record<string, string> = {
+  "causally-covered":
+    "Keep this test and rerun it when your prompt or model changes.",
+  "pseudo-covered":
+    "Review the test’s checks. Try a case that would fail if this rule were broken.",
+  uncovered: "Add a test for this behavior, then run the check again.",
+  flaky:
+    "Make the original test results consistent before checking rule removal again.",
+  indeterminate:
+    "Inspect the test results and experiment settings, then rerun the check.",
+};
 const resultFor = (id: string) =>
   data.causalResults.find((r) => r.ruleId === id)!;
 const statusFor = (id: string) => resultFor(id)?.classification ?? "uncovered";
@@ -53,11 +62,11 @@ function StatusBadge({ status }: { status: string }) {
   return (
     <span className={"status-badge " + status}>
       {status === "causally-covered" ? (
-        <CircleCheck size={12} />
+        <CircleCheck size={15} />
       ) : status === "pseudo-covered" ? (
-        <TriangleAlert size={12} />
+        <TriangleAlert size={15} />
       ) : (
-        <CircleDashed size={12} />
+        <CircleDashed size={15} />
       )}{" "}
       {labels[status] ?? status}
     </span>
@@ -76,24 +85,29 @@ function Passes({ passes, runs }: { passes: number; runs: number }) {
   );
 }
 export function Demo() {
-  const [tab, setTab] = useState("Overview");
+  const [status, setStatus] = useState("all");
   const [query, setQuery] = useState("");
   const [severity, setSeverity] = useState("");
   const [type, setType] = useState("");
   const [tag, setTag] = useState("");
   const [filters, setFilters] = useState(false);
+  const [matrixView, setMatrixView] = useState(false);
   const [selected, setSelected] = useState<Rule | null>(null);
   const [drawerTab, setDrawerTab] = useState("Evidence");
   const [metric, setMetric] = useState<string | null>(null);
-  const [menu, setMenu] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [copyError, setCopyError] = useState(false);
+  const copyTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const returnFocus = useRef<HTMLElement | null>(null);
   const s = data.summary;
-  const firstPseudoRule = data.rules.find(
-    (rule) => statusFor(rule.id) === "pseudo-covered",
-  )!;
   useEffect(() => {
-    const id = new URLSearchParams(window.location.search).get("rule");
-    if (id) setSelected(data.rules.find((r) => r.id === id) ?? null);
+    const syncRule = () => {
+      const id = new URLSearchParams(window.location.search).get("rule");
+      setSelected(data.rules.find((r) => r.id === id) ?? null);
+      setDrawerTab("Evidence");
+    };
+    syncRule();
+    window.addEventListener("popstate", syncRule);
     const shortcut = (event: KeyboardEvent) => {
       const target = event.target as HTMLElement;
       if (
@@ -105,439 +119,343 @@ export function Demo() {
       ) {
         event.preventDefault();
         document
-          .querySelector<HTMLInputElement>(
-            '[aria-label="Search behavioral rules"]',
-          )
+          .querySelector<HTMLInputElement>('[aria-label="Search rules"]')
           ?.focus();
       }
     };
     window.addEventListener("keydown", shortcut);
-    return () => window.removeEventListener("keydown", shortcut);
+    return () => {
+      window.removeEventListener("popstate", syncRule);
+      window.removeEventListener("keydown", shortcut);
+      if (copyTimer.current) clearTimeout(copyTimer.current);
+    };
   }, []);
-  const openRule = (r: Rule) => {
-    setSelected(r);
+  const openRule = (rule: Rule) => {
+    returnFocus.current = document.activeElement as HTMLElement;
+    setSelected(rule);
     setDrawerTab("Evidence");
+    setCopied(false);
+    setCopyError(false);
+    if (copyTimer.current) clearTimeout(copyTimer.current);
+    const url = new URL(window.location.href);
+    url.searchParams.set("rule", rule.id);
+    window.history.replaceState(null, "", url);
+  };
+  const closeRule = () => {
+    setSelected(null);
+    const url = new URL(window.location.href);
+    url.searchParams.delete("rule");
+    window.history.replaceState(null, "", url);
+  };
+  const reset = () => {
+    setQuery("");
+    setSeverity("");
+    setType("");
+    setTag("");
+    setStatus("all");
   };
   const selectedStatus = selected ? statusFor(selected.id) : "";
   const causal = selected ? resultFor(selected.id) : undefined;
   const suggestions = selected
     ? data.suggestions.filter((x) => x.ruleId === selected.id)
     : [];
-  const rules = data.rules.filter((rule) => {
-    const status = statusFor(rule.id);
-    return (
-      (tab === "Uncovered"
-        ? status === "uncovered"
-        : tab === "Pseudo-Covered"
-          ? status === "pseudo-covered"
-          : tab === "Causally Covered"
-            ? status === "causally-covered"
-            : true) &&
-      (!severity ||
-        (severity === "unprotected-high-risk"
-          ? ["high", "critical"].includes(rule.severity) &&
-            status !== "causally-covered"
-          : rule.severity === severity)) &&
-      (!type || rule.type === type) &&
-      (!tag || rule.tags.includes(tag)) &&
-      `${rule.id} ${rule.expectedBehavior} ${rule.tags.join(" ")}`
-        .toLowerCase()
-        .includes(query.toLowerCase())
-    );
-  });
+  const rank: Record<string, number> = {
+    critical: 0,
+    high: 1,
+    medium: 2,
+    low: 3,
+  };
+  const priority = (rule: Rule) =>
+    (statusFor(rule.id) === "causally-covered" ? 10 : 0) +
+    (rank[rule.severity] ?? 4);
+  const rules = data.rules
+    .filter(
+      (rule) =>
+        (status === "all" ||
+          (status === "attention"
+            ? statusFor(rule.id) !== "causally-covered"
+            : statusFor(rule.id) === status)) &&
+        (!severity || rule.severity === severity) &&
+        (!type || rule.type === type) &&
+        (!tag || rule.tags.includes(tag)) &&
+        (rule.id + " " + rule.expectedBehavior + " " + rule.tags.join(" "))
+          .toLowerCase()
+          .includes(query.trim().toLowerCase()),
+    )
+    .sort((a, b) => priority(a) - priority(b));
+  const firstGap = [...data.rules]
+    .sort((a, b) => priority(a) - priority(b))
+    .find((rule) => statusFor(rule.id) !== "causally-covered")!;
   const metrics = [
     {
-      name: "Behavioral rules",
-      value: String(s.totalRules),
-      detail: `Across ${s.totalEvals} evaluation cases`,
-      icon: FileCode2,
-      tone: "neutral",
-      explain: `Each atomic, externally testable instruction in the system prompt counts as one behavioral rule. This fixture has ${s.totalRules} rules and ${s.totalEvals} evals.`,
-    },
-    {
-      name: "Trace Coverage",
-      value: percent(s.traceCoverage),
-      detail: `${s.traceCovered} of ${s.totalRules} rules mapped`,
-      icon: GitBranch,
-      tone: "blue",
-      explain: `${s.traceCovered} rules have at least one direct mapping with confidence ≥ ${percent(data.run.thresholds.mappingConfidence)}. Trace Coverage = ${s.traceCovered} / ${s.totalRules} = ${percent(s.traceCoverage)}. Mappings can be mistaken; verification tests their causal strength.`,
-    },
-    {
-      name: "Causal Rule Coverage",
-      value: percent(s.causalCoverage!),
-      detail: `${s.causallyCovered} of ${s.totalRules} rules protected`,
-      icon: ShieldCheck,
+      name: "Removal detected",
+      value: s.causallyCovered,
+      icon: CircleCheck,
+      status: "causally-covered",
       tone: "green",
-      explain: `${s.causallyCovered} rules have stable passing baselines and a detection effect of at least ${percent(data.run.causal.minimumDetectionEffect)} across ${data.run.runsPerEval} runs per mapped eval. CRC = ${s.causallyCovered} / ${s.totalRules} = ${percent(s.causalCoverage!)}. Severity does not change this metric.`,
+      detail: "Tests caught the missing instruction",
+      explain:
+        "The original tests passed consistently, then reliably failed when the instruction was removed. This is called causal rule coverage. It is evidence for the tested setup, not a guarantee of safety.",
     },
     {
-      name: "Pseudo-covered",
-      value: String(s.pseudoCovered).padStart(2, "0"),
-      detail: "Mapped, but not protected",
+      name: "Removal missed",
+      value: s.pseudoCovered,
       icon: TriangleAlert,
+      status: "pseudo-covered",
       tone: "amber",
-      explain: `${s.pseudoCovered} rules have credible mappings and stable baselines, yet removing the instruction left their evals passing. Under the tested model and configuration those evals did not detect the removal. That can mean a weak test, or a model that keeps the behavior without being told.`,
+      detail: "Tests passed with the instruction missing",
+      explain:
+        "The tests still passed after removing the instruction. This is called pseudo-coverage. The test might be weak, or the model or another instruction might preserve the behavior. Review the evidence and test checks.",
+    },
+    {
+      name: "No test linked",
+      value: s.uncovered,
+      icon: CircleDashed,
+      status: "uncovered",
+      tone: "red",
+      detail: "Add a test for these rules",
+      explain:
+        "No existing test was confidently linked to the rule. This is called uncovered. Add a relevant test before checking whether it detects removal.",
     },
   ];
+  const hasFilters = !!(query || severity || type || tag || status !== "all");
   return (
-    <div className="app-shell">
-      <aside className={"app-sidebar " + (menu ? "mobile-open" : "")}>
-        <div className="sidebar-top">
-          <Brand />
-          <span className="version-label">v0.1</span>
-        </div>
-        <div className="workspace-switch">
-          <span className="workspace-icon">S</span>
-          <div>
-            Support agent<small>Example workspace</small>
-          </div>
-          <ChevronRight size={14} />
-        </div>
-        <div className="sidebar-section-label">ANALYSIS</div>
-        <nav aria-label="Analysis navigation">
-          {tabs.map((t) => (
-            <button
-              key={t.name}
-              className={tab === t.name ? "active" : ""}
-              onClick={() => {
-                setTab(t.name);
-                setMenu(false);
-              }}
-            >
-              <t.icon size={17} />
-              {t.name}
-              {t.name === "Pseudo-Covered" ? (
-                <span className="nav-count amber-count">{s.pseudoCovered}</span>
-              ) : t.name === "Uncovered" ? (
-                <span className="nav-count">{s.uncovered}</span>
-              ) : null}
-            </button>
-          ))}
-        </nav>
-        <div className="sidebar-bottom">
-          <div className="demo-notice">
-            <span>
-              <Sparkles size={15} /> Explore the evidence
-            </span>
-            <p>
-              A deterministic example.
-              <br />
-              No API keys. No model calls.
-            </p>
-            <Link href="/docs">
-              Run it on your prompt <ArrowUpRightIcon />
-            </Link>
-          </div>
-          <Link href="/docs">
-            <BookOpen size={16} /> Documentation
-          </Link>
-          <Link href="/">
-            <ArrowLeft size={16} /> Back to CausEval
-          </Link>
-          <div className="sidebar-theme">
-            <span>APACHE 2.0</span>
-            <ThemeToggle />
-          </div>
-        </div>
-      </aside>
-      <div className="app-main">
-        <header className="app-topbar">
-          <button
-            className="mobile-menu icon-button"
-            aria-label="Toggle navigation"
-            onClick={() => setMenu(!menu)}
-          >
-            <LayoutDashboard size={18} />
-          </button>
-          <div className="breadcrumb">
-            <span>Workspace</span>
-            <ChevronRight size={13} />
-            <span>Support agent</span>
-            <ChevronRight size={13} />
-            <strong>{tab}</strong>
-          </div>
-          <span className="fixture-pill">
-            <span className="status-dot green" /> DETERMINISTIC DEMO
+    <>
+      <Header />
+      <main id="main" className="report-page">
+        <div className="example-notice">
+          <CircleDashed size={17} />
+          <span>
+            <strong>You’re exploring an example.</strong> Saved results for a
+            support assistant. No live AI calls.
           </span>
-        </header>
-        <main id="main" className="dashboard">
-          <div className="dashboard-heading">
+          <Link href="/docs">
+            Use your own project <ArrowRight size={15} />
+          </Link>
+        </div>
+        <div className="report-heading">
+          <div>
+            <span className="quiet-label">
+              SUPPORT ASSISTANT / EXAMPLE REPORT
+            </span>
+            <h1>See what your tests catch.</h1>
+            <p>
+              {s.totalRules} rules checked against {s.totalEvals} tests. Start
+              with the gaps below.
+            </p>
+          </div>
+          <details className="report-download">
+            <summary>
+              <ArrowDownToLine size={16} /> Download report
+            </summary>
             <div>
-              <div className="eyebrow">BEHAVIORAL CONTRACT ANALYSIS</div>
-              <h1>{tab === "Overview" ? "Coverage overview" : tab}</h1>
-              <p>Your evals pass. Here’s what they actually protect.</p>
-            </div>
-            <div className="dashboard-actions">
-              <a
-                className="button button-outline button-small"
-                href="/demo.json"
-                download="causeval-report.json"
-              >
-                <ArrowDownToLine size={15} /> Export JSON
+              <a href="/demo.json" download="causeval-report.json">
+                JSON data <ArrowDownToLine size={15} />
               </a>
-              <Button size="sm" asChild>
-                <Link href="/docs">
-                  <Terminal size={15} /> Run on your prompt
-                </Link>
-              </Button>
+              <a href="/report.html" target="_blank" rel="noreferrer">
+                Full HTML report ↗
+              </a>
+            </div>
+          </details>
+        </div>
+        <section className="result-summary" aria-label="Results summary">
+          {metrics.map((m) => (
+            <article key={m.name} className={"result-card tone-" + m.tone}>
+              <div>
+                <m.icon size={20} />
+                <button
+                  onClick={() => setMetric(m.name)}
+                  aria-label={"Explain " + m.name}
+                >
+                  What does this mean?
+                </button>
+              </div>
+              <strong>
+                {m.value}
+                <small> / {s.totalRules} rules</small>
+              </strong>
+              <h2>{m.name}</h2>
+              <p>{m.detail}</p>
+            </article>
+          ))}
+        </section>
+        <section className="next-action">
+          <div className="next-action-icon">
+            <TriangleAlert size={22} />
+          </div>
+          <div>
+            <span className="quiet-label">START HERE</span>
+            <h2>{s.highRiskUnprotected} high-priority rules need review.</h2>
+            <p>
+              Start with the rules marked critical or high. Open a rule to see
+              what happened and what to test next.
+            </p>
+          </div>
+          <Button onClick={() => openRule(firstGap)}>
+            Review the first gap <ArrowRight size={17} />
+          </Button>
+        </section>
+        <section className="rules-panel" aria-labelledby="rules-title">
+          <div className="rules-heading">
+            <div>
+              <h2 id="rules-title">Your rules</h2>
+              <p>Needs attention first. Select a rule to see its result.</p>
+            </div>
+            <div className="view-switch" role="group" aria-label="Report view">
+              <button
+                aria-pressed={!matrixView}
+                onClick={() => setMatrixView(false)}
+              >
+                <List size={16} /> List
+              </button>
+              <button
+                aria-pressed={matrixView}
+                onClick={() => setMatrixView(true)}
+              >
+                <Grid2X2 size={16} /> Matrix
+              </button>
             </div>
           </div>
-          <div className="run-metadata">
-            <span>
-              <FileCode2 size={14} /> support-agent / system.md
-            </span>
-            <span>
-              <GitBranch size={14} /> rule removal
-            </span>
-            <span>
-              <Check size={14} /> 3 runs per eval
-            </span>
-            <span>Fixture v1</span>
+          <div className="rule-controls">
+            <label className="rule-search">
+              <Search size={18} />
+              <input
+                aria-label="Search rules"
+                placeholder="Search rules…"
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+              {query && (
+                <button onClick={() => setQuery("")} aria-label="Clear search">
+                  <X size={16} />
+                </button>
+              )}
+            </label>
+            <button
+              className="button button-outline"
+              aria-expanded={filters}
+              aria-controls="advanced-filters"
+              onClick={() => setFilters(!filters)}
+            >
+              <SlidersHorizontal size={16} /> Filters
+              {severity || type || tag ? " •" : ""}
+            </button>
           </div>
-          <div className="dashboard-metrics">
-            {metrics.map((m) => (
+          <div
+            className="status-filters"
+            role="group"
+            aria-label="Filter rules by result"
+          >
+            {[
+              { id: "all", label: "All rules", count: s.totalRules },
+              {
+                id: "attention",
+                label: "Needs attention",
+                count: s.totalRules - s.causallyCovered,
+              },
+              ...metrics.map((m) => ({
+                id: m.status,
+                label: m.name,
+                count: m.value,
+              })),
+            ].map((item) => (
               <button
-                key={m.name}
-                className={"dashboard-metric " + m.tone}
-                onClick={() => setMetric(m.name)}
-                aria-label={`Explain ${m.name}`}
+                key={item.id}
+                aria-pressed={status === item.id}
+                onClick={() => setStatus(item.id)}
               >
-                <div>
-                  <span>{m.name}</span>
-                  <m.icon size={16} />
-                </div>
-                <strong>{m.value}</strong>
-                <span className="metric-detail">
-                  {m.tone === "green" ? (
-                    <span className="small-bar">
-                      {Array.from({ length: 10 }, (_, i) => (
-                        <i
-                          key={i}
-                          className={
-                            i < Math.round(s.causalCoverage! * 10)
-                              ? "filled"
-                              : ""
-                          }
-                        />
-                      ))}
-                    </span>
-                  ) : null}
-                  {m.detail}
-                </span>
-                <span className="metric-info">ⓘ</span>
+                {item.label}
+                <span>{item.count}</span>
               </button>
             ))}
           </div>
-          <button
-            className="finding-banner"
-            onClick={() => {
-              setTab("Pseudo-Covered");
-              openRule(firstPseudoRule);
-            }}
-          >
-            <span className="finding-icon">
-              <TriangleAlert size={19} />
-            </span>
-            <div>
-              <strong>
-                {s.pseudoCovered} rules look tested. Their removal goes
-                undetected.
-              </strong>
-              <p>
-                These behaviors have mapped evals, but removing the instruction
-                changed nothing. Start with {firstPseudoRule.id}.
-              </p>
-            </div>
-            <span>
-              Investigate <ArrowRight size={16} />
-            </span>
-          </button>
-          {tab === "Overview" && (
-            <div className="overview-panels">
-              <section className="protection-panel">
-                <div className="panel-heading">
-                  <h2>The protection gap</h2>
-                  <span>{s.totalRules} behavioral rules</span>
-                </div>
-                <div className="protection-chart">
-                  <div className="protection-stack">
-                    <span
-                      className="green-stack"
-                      style={{
-                        width: (s.causallyCovered / s.totalRules) * 100 + "%",
-                      }}
-                    >
-                      {s.causallyCovered}
-                    </span>
-                    <span
-                      className="amber-stack"
-                      style={{
-                        width: (s.pseudoCovered / s.totalRules) * 100 + "%",
-                      }}
-                    >
-                      {s.pseudoCovered}
-                    </span>
-                    <span
-                      className="red-stack"
-                      style={{
-                        width: (s.uncovered / s.totalRules) * 100 + "%",
-                      }}
-                    >
-                      {s.uncovered}
-                    </span>
-                  </div>
-                  <div className="chart-legend">
-                    <span>
-                      <i className="green" />
-                      Causally covered
-                    </span>
-                    <span>
-                      <i className="amber" />
-                      Pseudo-covered
-                    </span>
-                    <span>
-                      <i className="red" />
-                      Uncovered
-                    </span>
-                  </div>
-                </div>
-              </section>
-              <section className="risk-panel">
-                <span className="risk-number">{s.highRiskUnprotected}</span>
-                <div>
-                  <h2>High-risk rules are unprotected</h2>
-                  <p>
-                    Privacy, authorization, and external actions.
-                    <br />
-                    Review the behavioral boundaries first.
-                  </p>
-                </div>
-                <button
-                  aria-label="Filter high and critical risk rules"
-                  className="icon-button"
-                  onClick={() => {
-                    setTab("Behavioral Contract");
-                    setSeverity("unprotected-high-risk");
-                    setFilters(true);
-                  }}
+          {filters && (
+            <div id="advanced-filters" className="simple-filters">
+              <label>
+                Priority
+                <select
+                  value={severity}
+                  onChange={(e) => setSeverity(e.target.value)}
                 >
-                  <ArrowUpRightIcon />
-                </button>
-              </section>
+                  <option value="">All priorities</option>
+                  {["critical", "high", "medium", "low"].map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Rule type
+                <select value={type} onChange={(e) => setType(e.target.value)}>
+                  <option value="">All types</option>
+                  {[...new Set(data.rules.map((r) => r.type))].map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </label>
+              <label>
+                Tag
+                <select value={tag} onChange={(e) => setTag(e.target.value)}>
+                  <option value="">All tags</option>
+                  {[...new Set(data.rules.flatMap((r) => r.tags))].map((v) => (
+                    <option key={v}>{v}</option>
+                  ))}
+                </select>
+              </label>
             </div>
           )}
-          <section className="matrix-panel">
-            <div className="panel-heading">
-              <div>
-                <h2>
-                  {tab === "Behavioral Contract"
-                    ? "Behavioral contract"
-                    : tab === "Overview" || tab === "Coverage Matrix"
-                      ? "Rule–eval coverage matrix"
-                      : tab + " rules"}{" "}
-                  <span className="count-chip">{rules.length}</span>
-                </h2>
-                <p>
-                  Every rule, every mapping, every outcome. Select a rule to
-                  inspect the evidence.
-                </p>
-              </div>
-              <a href="/report.html" target="_blank" rel="noreferrer">
-                Standalone report <ArrowUpRightIcon />
-              </a>
-            </div>
-            <div className="matrix-toolbar">
-              <label className="search-field">
-                <Search size={16} />
-                <input
-                  value={query}
-                  onChange={(e) => setQuery(e.target.value)}
-                  placeholder="Search rules, behaviors, tags…"
-                  aria-label="Search behavioral rules"
-                />
-                <kbd>/</kbd>
-              </label>
-              <button
-                className={
-                  "button button-outline button-small " +
-                  (filters ? "selected-filter" : "")
-                }
-                onClick={() => setFilters(!filters)}
-              >
-                <SlidersHorizontal size={14} /> Filters
-                {(severity || type || tag) && (
-                  <span className="status-dot green" />
-                )}
-              </button>
-              <span className="matrix-help">
-                Click a rule to explore <ChevronRight size={13} />
-              </span>
-            </div>
-            {filters && (
-              <div className="filter-row">
-                <label>
-                  Severity
-                  <select
-                    aria-label="Severity"
-                    value={severity}
-                    onChange={(e) => setSeverity(e.target.value)}
-                  >
-                    <option value="">All severities</option>
-                    <option value="unprotected-high-risk">
-                      High-risk unprotected
-                    </option>
-                    {["critical", "high", "medium", "low"].map((v) => (
-                      <option key={v}>{v}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Type
-                  <select
-                    aria-label="Type"
-                    value={type}
-                    onChange={(e) => setType(e.target.value)}
-                  >
-                    <option value="">All types</option>
-                    {[...new Set(data.rules.map((r) => r.type))].map((v) => (
-                      <option key={v}>{v}</option>
-                    ))}
-                  </select>
-                </label>
-                <label>
-                  Tag
-                  <select
-                    aria-label="Tag"
-                    value={tag}
-                    onChange={(e) => setTag(e.target.value)}
-                  >
-                    <option value="">All tags</option>
-                    {[...new Set(data.rules.flatMap((r) => r.tags))].map(
-                      (v) => (
-                        <option key={v}>{v}</option>
-                      ),
-                    )}
-                  </select>
-                </label>
+          <div className="list-context">
+            <span role="status">
+              {rules.length} of {s.totalRules} rules
+              {hasFilters ? " match your filters" : " · sorted by priority"}
+            </span>
+            {hasFilters && <button onClick={reset}>Clear all filters</button>}
+          </div>
+          {!matrixView ? (
+            <div className="rule-list">
+              {rules.map((rule) => (
                 <button
-                  onClick={() => {
-                    setSeverity("");
-                    setType("");
-                    setTag("");
-                    setQuery("");
-                  }}
+                  className="rule-row"
+                  key={rule.id}
+                  onClick={() => openRule(rule)}
                 >
-                  Reset filters
+                  <span className="rule-row-id">{rule.id}</span>
+                  <span className="rule-row-copy">
+                    <strong>{rule.expectedBehavior}</strong>
+                    <span>
+                      <span className={"priority-label " + rule.severity}>
+                        {rule.severity} priority
+                      </span>
+                      <span>{rule.type.replaceAll("_", " ")}</span>
+                    </span>
+                  </span>
+                  <StatusBadge status={statusFor(rule.id)} />
+                  <ChevronRight className="row-arrow" size={18} />
                 </button>
-              </div>
-            )}
-            <div className="matrix-scroll">
-              <table className="coverage-matrix">
-                <thead>
-                  <tr>
-                    <th>BEHAVIORAL RULE</th>
-                    {tab !== "Behavioral Contract" &&
-                      data.evals.map((ev, i) => (
+              ))}
+              {rules.length === 0 && (
+                <div className="simple-empty">
+                  <Search size={24} />
+                  <h3>No rules match these filters.</h3>
+                  <p>
+                    Try another search or clear the filters to see all rules.
+                  </p>
+                  <Button variant="outline" onClick={reset}>
+                    Clear all filters
+                  </Button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <section
+              className="matrix-panel simple-matrix"
+              aria-label="Rule to test mappings"
+            >
+              <div className="matrix-scroll">
+                <table className="coverage-matrix">
+                  <thead>
+                    <tr>
+                      <th>BEHAVIORAL RULE</th>
+                      {data.evals.map((ev, i) => (
                         <th key={ev.id}>
                           <span className="eval-number">
                             E{String(i + 1).padStart(2, "0")}
@@ -547,34 +465,33 @@ export function Demo() {
                           </span>
                         </th>
                       ))}
-                    <th>STATUS</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {rules.map((rule) => {
-                    const status = statusFor(rule.id);
-                    return (
-                      <tr key={rule.id}>
-                        <td>
-                          <button
-                            className="matrix-rule"
-                            onClick={() => openRule(rule)}
-                          >
-                            <span className="rule-id">{rule.id}</span>
-                            <span>
-                              <strong>{rule.expectedBehavior}</strong>
-                              <small>
-                                <span
-                                  className={"severity-dot " + rule.severity}
-                                />
-                                {rule.severity} <i>·</i>{" "}
-                                {rule.type.replaceAll("_", " ")}
-                              </small>
-                            </span>
-                          </button>
-                        </td>
-                        {tab !== "Behavioral Contract" &&
-                          data.evals.map((ev) => {
+                      <th>STATUS</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {rules.map((rule) => {
+                      const status = statusFor(rule.id);
+                      return (
+                        <tr key={rule.id}>
+                          <td>
+                            <button
+                              className="matrix-rule"
+                              onClick={() => openRule(rule)}
+                            >
+                              <span className="rule-id">{rule.id}</span>
+                              <span>
+                                <strong>{rule.expectedBehavior}</strong>
+                                <small>
+                                  <span
+                                    className={"severity-dot " + rule.severity}
+                                  />
+                                  {rule.severity} <i>·</i>{" "}
+                                  {rule.type.replaceAll("_", " ")}
+                                </small>
+                              </span>
+                            </button>
+                          </td>
+                          {data.evals.map((ev) => {
                             const mapping = data.mappings.find(
                               (m) => m.ruleId === rule.id && m.evalId === ev.id,
                             );
@@ -603,83 +520,110 @@ export function Demo() {
                               </td>
                             );
                           })}
-                        <td>
-                          <button
-                            className="status-button"
-                            onClick={() => openRule(rule)}
-                          >
-                            <StatusBadge status={status} />
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-              {rules.length === 0 && (
-                <div className="empty-state">
-                  <Search size={25} />
-                  <h3>No matching behaviors</h3>
-                  <p>Try a different search or clear your filters.</p>
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => {
-                      setQuery("");
-                      setSeverity("");
-                      setType("");
-                      setTag("");
-                      setTab("Overview");
-                    }}
-                  >
-                    Clear all filters
-                  </Button>
+                          <td>
+                            <button
+                              className="status-button"
+                              onClick={() => openRule(rule)}
+                            >
+                              <StatusBadge status={status} />
+                            </button>
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+                {rules.length === 0 && (
+                  <div className="empty-state">
+                    <Search size={25} />
+                    <h3>No matching behaviors</h3>
+                    <p>Try a different search or clear your filters.</p>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => {
+                        setQuery("");
+                        setSeverity("");
+                        setType("");
+                        setTag("");
+                        setStatus("all");
+                      }}
+                    >
+                      Clear all filters
+                    </Button>
+                  </div>
+                )}
+              </div>
+              <div className="matrix-footer">
+                <div>
+                  <span>
+                    <i className="legend-cell covered">✓</i> Causally validated
+                  </span>
+                  <span>
+                    <i className="legend-cell pseudo">◐</i> Direct, causally
+                    weak
+                  </span>
+                  <span>
+                    <i className="legend-cell none">·</i> No mapping
+                  </span>
                 </div>
-              )}
-            </div>
-            <div className="matrix-footer">
-              <div>
                 <span>
-                  <i className="legend-cell covered">✓</i> Causally validated
-                </span>
-                <span>
-                  <i className="legend-cell pseudo">◐</i> Direct, causally weak
-                </span>
-                <span>
-                  <i className="legend-cell none">·</i> No mapping
+                  {rules.length} of {s.totalRules} rules
                 </span>
               </div>
-              <span>
-                {rules.length} of {s.totalRules} rules
-              </span>
-            </div>
-          </section>
-          <footer className="dashboard-footer">
-            <span>
-              <ShieldCheck size={13} /> Testing evidence, not proof of safety or
-              correctness.
-            </span>
-            <span>Built for inspectable evidence.</span>
-          </footer>
-        </main>
-      </div>
+            </section>
+          )}
+        </section>
+        <details className="report-method">
+          <summary>How this report was calculated</summary>
+          <p>
+            Each linked test was repeated {data.run.runsPerEval} times before
+            and after removing one instruction. {s.traceCovered} of{" "}
+            {s.totalRules} rules have a linked test (trace coverage:{" "}
+            {percent(s.traceCoverage)}). {s.causallyCovered} of {s.totalRules}{" "}
+            had removals detected reliably (causal rule coverage:{" "}
+            {percent(s.causalCoverage!)}).
+          </p>
+          <p>
+            These are precomputed results from a deterministic example. They
+            explain the method, not the performance of a live model.{" "}
+            <Link href="/docs#concepts">Read the method and thresholds →</Link>
+          </p>
+        </details>
+        <footer className="report-footer">
+          <span>Evidence for this test setup. Not a safety certification.</span>
+          <Link href="/docs">Ready for your own project? Setup guide →</Link>
+        </footer>
+      </main>
       <Dialog.Root
         open={!!selected}
         onOpenChange={(open) => {
-          if (!open) setSelected(null);
+          if (!open) closeRule();
         }}
       >
         <Dialog.Portal>
           <Dialog.Overlay className="dialog-overlay" />
           <Dialog.Content
-            className="rule-drawer"
+            className="rule-drawer simple-drawer"
             aria-describedby="rule-description"
+            onCloseAutoFocus={(event) => {
+              event.preventDefault();
+              const target = returnFocus.current;
+              if (target?.isConnected && target !== document.body)
+                target.focus();
+              else
+                document
+                  .querySelector<HTMLInputElement>(
+                    '[aria-label="Search rules"]',
+                  )
+                  ?.focus();
+            }}
           >
             {selected && (
               <>
                 <div className="drawer-top">
                   <span>
-                    <FileCode2 size={15} /> BEHAVIORAL RULE <b>{selected.id}</b>
+                    <FileCode2 size={15} /> RULE <b>{selected.id}</b>
                   </span>
                   <Dialog.Close
                     className="icon-button"
@@ -697,30 +641,49 @@ export function Demo() {
                     id="rule-description"
                     className="drawer-description"
                   >
-                    {selected.severity.toUpperCase()} SEVERITY <span>·</span>{" "}
+                    {selected.severity.toUpperCase()} PRIORITY <span>·</span>{" "}
                     {selected.type.replaceAll("_", " ")}
                   </Dialog.Description>
-                  <div className="source-block">
-                    <span>
-                      <FileCode2 size={14} /> {selected.source.file}:
-                      {selected.source.lineStart}
-                    </span>
-                    <code>{selected.source.exactQuote}</code>
-                  </div>
+                  <details className="rule-source">
+                    <summary>View original instruction</summary>
+                    <div className="source-block">
+                      <span>
+                        <FileCode2 size={14} /> {selected.source.file}:
+                        {selected.source.lineStart}
+                      </span>
+                      <code>{selected.source.exactQuote}</code>
+                    </div>
+                  </details>
+                  <section className="plain-verdict">
+                    <h3>What happened</h3>
+                    <p>{meaning[selectedStatus]}</p>
+                    {selectedStatus === "pseudo-covered" && (
+                      <p>
+                        The test may be weak, or the behavior may remain because
+                        of the model or another instruction.
+                      </p>
+                    )}
+                    <h3>What to do next</h3>
+                    <p>{nextStep[selectedStatus]}</p>
+                  </section>
                   <div
                     className="drawer-tabs"
-                    role="tablist"
+                    role="group"
                     aria-label="Rule details"
                   >
                     {["Evidence", "Suggested evals", "Source & mappings"].map(
                       (t) => (
                         <button
-                          role="tab"
-                          aria-selected={drawerTab === t}
+                          type="button"
+                          aria-pressed={drawerTab === t}
                           key={t}
                           onClick={() => setDrawerTab(t)}
                         >
-                          {t}
+                          {t === "Evidence"
+                            ? "Test results"
+                            : t === "Suggested evals"
+                              ? "Suggested tests"
+                              : "Technical details"}
                           {t === "Suggested evals" &&
                             suggestions.length > 0 && (
                               <span>{suggestions.length}</span>
@@ -734,13 +697,13 @@ export function Demo() {
                       {causal?.baseline.runs ? (
                         <>
                           <div className="evidence-label">
-                            <GitBranch size={14} /> CONTROLLED RULE REMOVAL
+                            <GitBranch size={14} /> BEFORE AND AFTER
                           </div>
                           <div className="experiment-stage">
                             <div>
                               <span className="stage-number">01</span>
                               <strong>Original prompt</strong>
-                              <span className="stage-meta">Baseline</span>
+                              <span className="stage-meta">Before</span>
                             </div>
                             <p>{causal.mappedEvalIds.join(", ")}</p>
                             <Passes
@@ -752,7 +715,10 @@ export function Demo() {
                             <ArrowDown size={16} />
                             <span>Remove only this rule</span>
                           </div>
-                          <pre className="mutation-diff">{causal.diff}</pre>
+                          <details className="rule-source">
+                            <summary>View the exact change</summary>
+                            <pre className="mutation-diff">{causal.diff}</pre>
+                          </details>
                           <div className="remove-arrow">
                             <ArrowDown size={16} />
                             <span>Run the same evals again</span>
@@ -761,7 +727,7 @@ export function Demo() {
                             <div>
                               <span className="stage-number">02</span>
                               <strong>Without {selected.id}</strong>
-                              <span className="stage-meta">Mutant</span>
+                              <span className="stage-meta">After removal</span>
                             </div>
                             <Passes
                               passes={causal.mutant.passes}
@@ -835,7 +801,7 @@ export function Demo() {
                               className="full-width"
                               onClick={() => setDrawerTab("Suggested evals")}
                             >
-                              <Sparkles size={15} /> Explore suggested evals{" "}
+                              <Sparkles size={15} /> Review suggested tests{" "}
                               <ArrowRight size={15} />
                             </Button>
                           )}
@@ -843,26 +809,32 @@ export function Demo() {
                       ) : (
                         <div className="uncovered-evidence">
                           <CircleDashed size={34} />
-                          <h3>No eval reaches this behavior.</h3>
+                          <h3>No test is linked to this rule.</h3>
                           <p>
-                            There is no credible mapping to an existing eval. A
-                            causal experiment cannot run until a relevant test
-                            exists.
+                            Add a test that checks this behavior, then run
+                            verification to see whether it catches a missing
+                            instruction.
                           </p>
                           <Button
                             onClick={() => setDrawerTab("Suggested evals")}
                           >
-                            Explore missing tests <ArrowRight size={15} />
+                            Review suggested tests <ArrowRight size={15} />
                           </Button>
                         </div>
                       )}
                     </div>
                   ) : drawerTab === "Suggested evals" ? (
                     <div className="suggestions">
+                      <span role="status" className="copy-feedback">
+                        {copied
+                          ? "Suggested tests copied."
+                          : copyError
+                            ? "Could not copy. Select the test text below to copy it manually."
+                            : ""}
+                      </span>
                       <p className="suggestion-note">
-                        GENERATED — UNREVIEWED. Drafted from the rule, never
-                        executed, and excluded from every coverage number until
-                        a developer accepts them.
+                        Draft suggestions — review before use. These tests have
+                        not been run or included in the results.
                       </p>
                       {suggestions.length ? (
                         suggestions.map((item, i) => (
@@ -905,8 +877,15 @@ export function Demo() {
                                 ),
                               );
                               setCopied(true);
-                              setTimeout(() => setCopied(false), 2000);
+                              setCopyError(false);
+                              if (copyTimer.current)
+                                clearTimeout(copyTimer.current);
+                              copyTimer.current = setTimeout(
+                                () => setCopied(false),
+                                2000,
+                              );
                             } catch {
+                              setCopyError(true);
                               setCopied(false);
                             }
                           }}
@@ -916,7 +895,7 @@ export function Demo() {
                           ) : (
                             <FileCode2 size={15} />
                           )}{" "}
-                          {copied ? "Copied JSON" : "Copy suggested evals"}
+                          {copied ? "Copied" : "Copy suggested tests (JSON)"}
                         </Button>
                       )}
                     </div>
@@ -961,8 +940,8 @@ export function Demo() {
                   )}
                 </div>
                 <div className="drawer-bottom">
-                  <CircleDashed size={12} /> Deterministic fixture · 3
-                  repetitions · No live model calls
+                  <CircleDashed size={12} /> Saved example ·{" "}
+                  {data.run.runsPerEval} runs per test · No live AI calls
                 </div>
               </>
             )}
@@ -991,21 +970,6 @@ export function Demo() {
           </Dialog.Content>
         </Dialog.Portal>
       </Dialog.Root>
-    </div>
-  );
-}
-function ArrowUpRightIcon() {
-  return (
-    <svg
-      width="15"
-      height="15"
-      viewBox="0 0 24 24"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.6"
-      aria-hidden="true"
-    >
-      <path d="M7 17 17 7M7 7h10v10" />
-    </svg>
+    </>
   );
 }

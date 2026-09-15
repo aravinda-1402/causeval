@@ -1,11 +1,12 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import "./experience.css";
 const siteURL = process.env.NEXT_PUBLIC_SITE_URL;
 const socialImage = siteURL
   ? new URL("/social-preview.png", siteURL).href
   : "https://raw.githubusercontent.com/aravinda-1402/causeval/main/apps/web/public/social-preview.png";
 const description =
-  "Map behavioral rules in LLM system prompts to evals and verify whether those tests detect controlled removal of the rules. Contract · Trace · Verify.";
+  "Check whether your AI tests catch missing instructions. See what is covered, find gaps, and know what to test next.";
 export const metadata: Metadata = {
   ...(siteURL ? { metadataBase: new URL(siteURL) } : {}),
   title: {

@@ -37,8 +37,6 @@ test("capture and inspect responsive product surfaces", async ({
     fullPage: true,
   });
   await page.keyboard.press("Escape");
-  if (testInfo.project.name === "mobile")
-    await page.getByRole("button", { name: "Toggle navigation" }).click();
   await page.getByRole("button", { name: "Switch to light theme" }).click();
   await page.screenshot({
     path: `output/playwright/light-${testInfo.project.name}.png`,

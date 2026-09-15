@@ -1,14 +1,16 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Info, ShieldCheck } from "lucide-react";
+import { ShieldCheck } from "lucide-react";
 import { Header } from "@/components/header";
 import { CopyCommand } from "@/components/copy";
+import { Button } from "@/components/ui/button";
 export const metadata: Metadata = {
-  title: "Documentation",
+  title: "Guide and setup",
   description:
     "Configure CausEval providers, native evals, custom runners, and causal coverage gates.",
 };
 const sections = [
+  "Reading your results",
   "Quick start",
   "Concepts",
   "Configuration",
@@ -25,7 +27,7 @@ export default function Docs() {
       <Header />
       <main id="main" className="docs-layout">
         <aside className="docs-sidebar">
-          <span>DOCUMENTATION</span>
+          <span>GUIDE AND SETUP</span>
           <nav aria-label="Documentation sections">
             {sections.map((s) => (
               <a key={s} href={"#" + s.toLowerCase().replaceAll(" ", "-")}>
@@ -35,23 +37,52 @@ export default function Docs() {
           </nav>
         </aside>
         <article className="docs-content">
-          <span className="eyebrow">GET TO YOUR FIRST COVERAGE REPORT</span>
-          <h1>Make the contract visible.</h1>
+          <span className="quiet-label">START HERE</span>
+          <h1>From a rule to a useful test.</h1>
           <p className="docs-lead">
-            CausEval connects what your prompt asks for to what your evals
-            actually protect. Start with a deterministic example, then bring
-            your own prompt.
+            Your prompt is the set of instructions you give your AI. Your tests
+            check its behavior. CausEval helps you find out whether those tests
+            notice when an instruction is removed.
           </p>
-          <div className="docs-note">
-            <Info size={19} />
+          <div className="guide-intro">
+            <h2>New to CausEval? Start with the example.</h2>
             <p>
-              The public demo is precomputed from a deterministic fixture. Its
-              results demonstrate the method, not the performance of a real
-              model. <Link href="/demo">Explore the evidence →</Link>
+              Open the report, choose a rule, and read its result and suggested
+              next step. No installation or API key needed.
             </p>
+            <Button asChild>
+              <Link href="/demo">Explore the example →</Link>
+            </Button>
           </div>
+          <section id="reading-your-results">
+            <h2>Reading your results</h2>
+            <ul>
+              <li>
+                <strong>Removal detected:</strong> the tests reliably caught a
+                missing instruction. Keep the test and rerun it when your setup
+                changes.
+              </li>
+              <li>
+                <strong>Removal missed:</strong> the tests still passed without
+                the instruction. Review the test; the AI may also keep the
+                behavior without being told.
+              </li>
+              <li>
+                <strong>No test linked:</strong> no test was confidently matched
+                to this rule. Add one before checking rule removal.
+              </li>
+            </ul>
+            <p>
+              The example uses saved, repeatable results. It demonstrates the
+              method, not the performance of a live model.
+            </p>
+          </section>
           <section id="quick-start">
-            <h2>Quick start</h2>
+            <h2>Developer setup</h2>
+            <p>
+              Ready to test your own AI? This part uses a terminal, your prompt,
+              and your test suite. A developer can help connect your project.
+            </p>
             <p>
               Try the interactive demo immediately with no setup or API key. For
               the CLI, npm publication is pending: use a source checkout with
