@@ -15,8 +15,8 @@ Only actions that remain are listed here. Local verification evidence is in
 
 ## GitHub
 
-- [ ] Review and push the final changes, including the immutable audit and its
-      resolution; wait for the new commit's hosted CI. The latest pre-pass CI is green.
+- [x] Review and push the final changes, including the immutable audit and its
+      resolution; hosted CI passed for commit `28e13af`.
 - [ ] Upload `docs/images/social-preview.png` as repository social preview,
       set the website URL after deployment, and confirm the private vulnerability
       reporting contact path. Repository settings were not modified.
@@ -43,10 +43,13 @@ is needed.
 
 ## Website
 
-- [ ] Set `NEXT_PUBLIC_SITE_URL` to the chosen HTTPS origin and deploy
+- [x] Set `NEXT_PUBLIC_SITE_URL` to the chosen HTTPS origin and deploy
       `apps/web/out` using [the deployment guide](docs/deployment.md). Build with
       `pnpm build` after setting that variable. Verify `/`, `/demo/`, `/docs/`,
       `/report.html` and `/social-preview.png` on the public domain.
+
+Deployed site: <https://causeval.arj142.chatgpt.site>. All five routes returned
+HTTP 200, and public desktop/mobile interaction tests passed.
 
 ## Release / Zenodo
 
@@ -61,6 +64,8 @@ is needed.
 
 ## Demo / LinkedIn
 
-- [ ] Record the [30-second demo](docs/launch-demo.md) with actual fixture
-      numbers and its visible limitation notice, then publish the launch post after
-      the public install and deployed-site checks pass.
+- [x] Prepare the [30-second demo](docs/launch-demo.md) with actual fixture
+      numbers and its visible limitation notice. A 30-second MP4 walkthrough is
+      available at `docs/images/causeval-launch.mp4`.
+- [ ] Publish the launch post after npm publication and the live-provider smoke
+      test are complete.

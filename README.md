@@ -21,6 +21,8 @@ benchmark of a live model._
 [Use your own prompt](#use-your-own-prompt-and-evals) ·
 [CLI reference](#cli) · [Documentation](#documentation)
 
+<https://causeval.arj142.chatgpt.site/demo/> · [30-second walkthrough](docs/images/causeval-launch.mp4)
+
 ## What you can do
 
 - **Inspect your prompt's contract:** see atomic behavioral rules with exact

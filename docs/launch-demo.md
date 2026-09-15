@@ -3,6 +3,11 @@
 Use the actual deterministic support fixture. Keep “Deterministic fixture — not
 a model benchmark” visible. Do not substitute invented pass rates or coverage.
 
+A prepared 30-second walkthrough is available at
+[`docs/images/causeval-launch.mp4`](images/causeval-launch.mp4). It uses the
+actual overview, mutation-evidence, suggested-test and social-preview states;
+the on-screen fixture disclaimer remains visible.
+
 ## Prepare
 
 From the checkout (Node 22+, pnpm 10; `npx --yes pnpm@10.17.1` is the fallback):

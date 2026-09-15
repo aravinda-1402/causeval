@@ -30,6 +30,8 @@ it, no canonical is invented and social metadata uses the repository's raw PNG.
 Verify `/social-preview.png` returns an image after deployment. The same PNG at
 `docs/images/social-preview.png` can be uploaded as the GitHub social preview.
 
-Deployment status has not been verified in this final pass. Configuration
-follows the [Next.js static export
-documentation](https://nextjs.org/docs/app/guides/static-exports).
+The validated static export is deployed at
+<https://causeval.arj142.chatgpt.site>. `/`, `/demo/`, `/docs/`, `/report.html`
+and `/social-preview.png` returned HTTP 200, and desktop/mobile interaction
+tests passed against the public deployment. Configuration follows the [Next.js
+static export documentation](https://nextjs.org/docs/app/guides/static-exports).

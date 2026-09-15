@@ -90,11 +90,13 @@ These are the limits of what was validated, stated plainly.
   Hosted permission behavior and the artifact service depend on the eventual
   repository settings.
 - **Repository verified public.** The existing `v0` tag points to `c9c0124` on
-  origin. The latest pre-pass GitHub CI run, [34668378196](https://github.com/aravinda-1402/causeval/actions/runs/34668378196),
-  passed on `a944130`. The owner reports an existing release; the unauthenticated
-  releases API returned no visible releases during this pass. No release or tag
-  was changed. npm still returned E404, and website deployment was not verified.
-  The working tree prepares version 0.1.1; see [release](release.md).
+  origin. Final commit `28e13af` passed hosted CI in [run 34918520357](https://github.com/aravinda-1402/causeval/actions/runs/34918520357).
+  The owner reports an existing release; the unauthenticated releases API returned
+  no visible releases during this pass. No release or tag was changed. npm still
+  returns E404 and requires authentication. The static site is live at
+  <https://causeval.arj142.chatgpt.site>; all five public routes and desktop/mobile
+  interaction checks passed. The working tree prepares version 0.1.1; see
+  [release](release.md).
 - Testing is evidence, not a guarantee that every input or environment is
   error-free.
 

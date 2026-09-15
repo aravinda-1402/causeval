@@ -70,8 +70,10 @@ test is an explicit pre-promotion gate, not a claim of benchmark validity.
 
 No PR comment was posted. Local Action execution validates outputs, thresholds,
 summary and input handling; hosted permissions and comment delivery still need
-the repository's configured credentials. The pre-pass public CI run on
-`a944130` is green; this working tree must be pushed to obtain a new hosted run.
+the repository's configured credentials. Final commit `28e13af` was pushed and
+hosted CI passed in [run 34918520357](https://github.com/aravinda-1402/causeval/actions/runs/34918520357).
+The deployed static site is <https://causeval.arj142.chatgpt.site> and its public
+routes passed desktop/mobile interaction checks.
 
 No P2 software finding is deliberately deferred. Remaining research limitations
 are single-rule interventions, instruction redundancy, model priors, sampling,
