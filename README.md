@@ -2,6 +2,9 @@
 
 **Code has coverage. Your prompts should too.**
 
+**[Try the live demo](https://aravinda-1402.github.io/causeval/)** — no install,
+no API key.
+
 [![CI](https://github.com/aravinda-1402/causeval/actions/workflows/ci.yml/badge.svg)](https://github.com/aravinda-1402/causeval/actions/workflows/ci.yml)
 [![License](https://img.shields.io/badge/license-Apache--2.0-blue.svg)](LICENSE)
 [![Node](https://img.shields.io/badge/node-%3E%3D22-brightgreen.svg)](package.json)
@@ -14,12 +17,13 @@ rules in your system prompt, links them to your tests, then removes one rule at
 a time and repeats those tests. See what was detected, what was missed, and what
 to test next. Results apply to the tested model and configuration.
 
-[![CausEval example report: 5 rule removals detected, 4 missed, 3 rules with no linked test, and a list ordered by review priority](docs/images/coverage-overview.png)](docs/images/causeval-launch.mp4)
+[![CausEval example report: 5 rule removals detected, 4 missed, 3 rules with no linked test, and a list ordered by review priority](docs/images/coverage-overview.png)](https://aravinda-1402.github.io/causeval/demo/)
 
 _The bundled support-agent fixture: 12 rules, 9 evals, and a passing baseline
 with a measurable coverage gap. These are reproducible fixture results, not a
 benchmark of a live model._
 
+[Live demo](https://aravinda-1402.github.io/causeval/) ·
 [Get started](#run-it-locally) · [Explore the app](#a-guided-tour-of-the-app) ·
 [Use your own prompt](#use-your-own-prompt-and-evals) ·
 [CLI reference](#cli) · [Documentation](#documentation)
